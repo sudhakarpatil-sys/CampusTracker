@@ -1,0 +1,139 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  CampusTracker design tokens.
+  Signature direction: a "notebook margin" system — dark, ink-on-paper feel
+  at night, warm paper feel in the day. Accent is a highlighter marigold,
+  primary actions use an ink-blue. See DESIGN.md for full rationale.
+*/
+
+@layer base {
+  :root {
+    --background: 42 30% 96%;
+    --foreground: 220 15% 10%;
+
+    --surface: 0 0% 100%;
+    --surface-raised: 40 25% 98%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 15% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 15% 10%;
+
+    --border: 40 20% 88%;
+    --input: 40 20% 85%;
+    --ring: 230 100% 61%;
+
+    --muted: 40 20% 92%;
+    --muted-foreground: 220 9% 40%;
+
+    --primary: 230 100% 61%;
+    --primary-foreground: 0 0% 100%;
+
+    --accent: 37 100% 44%;
+    --accent-foreground: 30 40% 10%;
+
+    --ink: 228 45% 30%;
+    --ink-foreground: 0 0% 100%;
+
+    --destructive: 357 74% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 152 55% 34%;
+    --warning: 37 100% 44%;
+
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 222 26% 6%;
+    --foreground: 228 27% 94%;
+
+    --surface: 220 24% 9%;
+    --surface-raised: 222 22% 13%;
+
+    --card: 222 22% 12%;
+    --card-foreground: 228 27% 94%;
+
+    --popover: 222 24% 10%;
+    --popover-foreground: 228 27% 94%;
+
+    --border: 226 22% 18%;
+    --input: 226 20% 20%;
+    --ring: 228 100% 68%;
+
+    --muted: 222 20% 15%;
+    --muted-foreground: 222 13% 60%;
+
+    --primary: 228 100% 68%;
+    --primary-foreground: 222 26% 8%;
+
+    --accent: 37 90% 55%;
+    --accent-foreground: 30 40% 10%;
+
+    --ink: 228 60% 78%;
+    --ink-foreground: 222 26% 8%;
+
+    --destructive: 357 74% 58%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 152 60% 55%;
+    --warning: 37 90% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    color-scheme: dark;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "cv11", "ss01";
+  }
+  ::selection {
+    @apply bg-accent/30 text-foreground;
+  }
+}
+
+@layer utilities {
+  /* Glassmorphism surface used for nav bars, cards, popovers */
+  .glass {
+    @apply bg-surface/70 backdrop-blur-xl backdrop-saturate-150 border border-border/60;
+  }
+
+  /* The signature "margin tab" — a small notched label that reads like a
+     sticky index tab on a notebook page. Used on dashboard widgets and
+     section headers to encode category, the way tabs encode a subject. */
+  .margin-tab {
+    @apply relative pl-3;
+  }
+  .margin-tab::before {
+    content: "";
+    @apply absolute left-0 top-1 bottom-1 w-[3px] rounded-full bg-accent;
+  }
+
+  .skeleton {
+    @apply relative overflow-hidden bg-muted rounded-md;
+  }
+  .skeleton::after {
+    content: "";
+    @apply absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-foreground/10 to-transparent animate-shimmer;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+}

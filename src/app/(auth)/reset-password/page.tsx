@@ -1,0 +1,13 @@
+import type { Metadata } from "next";
+import { AuthShell } from "@/components/auth/auth-shell";
+import { ResetPasswordForm } from "@/components/auth/reset-password-form";
+
+export const metadata: Metadata = { title: "Choose a new password" };
+
+export default function ResetPasswordPage() {
+  return (
+    <AuthShell title="Choose a new password" description="Make it something you haven't used before.">
+      <ResetPasswordForm />
+    </AuthShell>
+  );
+}
