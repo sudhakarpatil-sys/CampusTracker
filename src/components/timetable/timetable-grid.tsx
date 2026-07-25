@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Plus, CalendarClock } from "lucide-react";
+import Link from "next/link";
+import { Plus, CalendarClock, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
@@ -69,7 +70,14 @@ export function TimetableGrid() {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <p className="text-xs text-muted-foreground">Drag a lecture to move it — or use the edit button for precise timing.</p>
-        <WeekendToggle />
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/timetable/import">
+              <Sparkles className="h-3.5 w-3.5" /> Import with AI
+            </Link>
+          </Button>
+          <WeekendToggle />
+        </div>
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-border">

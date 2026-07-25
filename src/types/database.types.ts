@@ -75,6 +75,8 @@ export interface Database {
           attendance_target: number;
           color: string;
           is_archived: boolean;
+          created_via: "manual" | "ai_import";
+          source_import_id: string | null;
           created_at: string;
           updated_at: string;
         },
@@ -90,10 +92,60 @@ export interface Database {
           end_time: string;
           faculty_name: string | null;
           classroom: string | null;
+          source_import_id: string | null;
           created_at: string;
           updated_at: string;
         },
         "user_id" | "subject_id" | "day_of_week" | "start_time" | "end_time"
+      >;
+      timetable_imports: Table<
+        {
+          id: string;
+          user_id: string;
+          file_path: string;
+          original_filename: string;
+          mime_type: string;
+          file_size: number;
+          checksum: string;
+          status: "processing" | "needs_review" | "imported" | "failed" | "cancelled" | "superseded";
+          failure_reason: string | null;
+          detected_branch: string | null;
+          detected_semester: string | null;
+          detected_academic_year: string | null;
+          detected_division: string | null;
+          detection_confidence: Json;
+          extracted_payload: Json | null;
+          raw_extracted_text: string | null;
+          extraction_method: "pdf_text" | "vision" | "pending";
+          page_count: number | null;
+          version_number: number;
+          replaces_import_id: string | null;
+          superseded_by: string | null;
+          duplicate_resolution: "replace" | "merge" | "new" | "pending" | null;
+          created_at: string;
+          updated_at: string;
+        },
+        "user_id" | "file_path" | "original_filename" | "mime_type" | "file_size" | "checksum"
+      >;
+      timetable_import_items: Table<
+        {
+          id: string;
+          import_id: string;
+          user_id: string;
+          subject_name_raw: string;
+          matched_subject_id: string | null;
+          day_of_week: number | null;
+          start_time: string | null;
+          end_time: string | null;
+          faculty_name: string | null;
+          classroom: string | null;
+          confidence: "high" | "medium" | "low";
+          is_included: boolean;
+          conflict_reason: string | null;
+          created_at: string;
+          updated_at: string;
+        },
+        "import_id" | "user_id" | "subject_name_raw"
       >;
       attendance_records: Table<
         {
@@ -201,3 +253,5 @@ export type Note = Database["public"]["Tables"]["notes"]["Row"];
 export type Task = Database["public"]["Tables"]["tasks"]["Row"];
 export type CalendarEvent = Database["public"]["Tables"]["events"]["Row"];
 export type Exam = Database["public"]["Tables"]["exams"]["Row"];
+export type TimetableImport = Database["public"]["Tables"]["timetable_imports"]["Row"];
+export type TimetableImportItem = Database["public"]["Tables"]["timetable_import_items"]["Row"];
