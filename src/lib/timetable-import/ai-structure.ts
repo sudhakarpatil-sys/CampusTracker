@@ -7,7 +7,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? "");
 // daily rate limits (250 req/day on Flash), "gemini-2.5-flash-lite" has a
 // more generous free quota (~1,000 req/day) at slightly lower quality —
 // a one-line swap here if needed.
-const MODEL = "gemini-2.5-flash";
+const MODEL = "gemini-3.1-flash-lite";
 
 interface StudentContext {
   branch: string | null;
