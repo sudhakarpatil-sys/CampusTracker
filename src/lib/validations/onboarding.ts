@@ -9,6 +9,7 @@ export const onboardingSchema = z.object({
   semester: z.string().min(1, "Select a semester"),
   academicYear: z.string().min(4, "Enter your academic year, e.g. 2025-2026"),
   rollNumber: z.string().min(1, "Enter your roll number"),
+  batch: z.string().optional(),
   avatarFile: z.instanceof(File).optional().nullable(),
 });
 export type OnboardingInput = z.infer<typeof onboardingSchema>;

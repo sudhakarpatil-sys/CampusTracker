@@ -64,7 +64,7 @@ export function UploadStep({ isUploading, uploadProgress, onBack, onFileConfirme
     <Card className="p-8 sm:p-10">
       <h2 className="font-display text-xl font-semibold">Upload your timetable</h2>
       <p className="mt-1.5 text-sm text-muted-foreground">
-        A PDF works best. A clear photo of a printed or on-screen timetable works too.
+        Upload just your own division&apos;s timetable — a PDF works best, a clear photo works too.
       </p>
 
       <div

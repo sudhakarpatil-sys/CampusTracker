@@ -38,7 +38,7 @@ export function QuickActions() {
         <SubjectFormDialog
           onSubmit={createSubject}
           trigger={
-            <Button variant="outline" size="sm" className="w-full flex-col gap-1.5 py-4">
+            <Button variant="outline" size="sm" className="h-auto w-full flex-col items-center justify-center gap-1.5 py-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-soft active:scale-[0.97]">
               <BookOpen className="h-4 w-4" /> Subject
             </Button>
           }
@@ -47,7 +47,7 @@ export function QuickActions() {
           subjects={subjects}
           onSubmit={createSlot}
           trigger={
-            <Button variant="outline" size="sm" className="w-full flex-col gap-1.5 py-4">
+            <Button variant="outline" size="sm" className="h-auto w-full flex-col items-center justify-center gap-1.5 py-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-soft active:scale-[0.97]">
               <CalendarClock className="h-4 w-4" /> Lecture
             </Button>
           }
@@ -56,7 +56,7 @@ export function QuickActions() {
           subjects={subjects}
           onSubmit={createAssignment}
           trigger={
-            <Button variant="outline" size="sm" className="w-full flex-col gap-1.5 py-4">
+            <Button variant="outline" size="sm" className="h-auto w-full flex-col items-center justify-center gap-1.5 py-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-soft active:scale-[0.97]">
               <ListChecks className="h-4 w-4" /> Assignment
             </Button>
           }
@@ -64,7 +64,7 @@ export function QuickActions() {
         <EventFormDialog
           onSubmit={createEvent}
           trigger={
-            <Button variant="outline" size="sm" className="w-full flex-col gap-1.5 py-4">
+            <Button variant="outline" size="sm" className="h-auto w-full flex-col items-center justify-center gap-1.5 py-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-soft active:scale-[0.97]">
               <PartyPopper className="h-4 w-4" /> Event
             </Button>
           }
@@ -72,12 +72,12 @@ export function QuickActions() {
         <TaskFormDialog
           onSubmit={createTask}
           trigger={
-            <Button variant="outline" size="sm" className="w-full flex-col gap-1.5 py-4">
+            <Button variant="outline" size="sm" className="h-auto w-full flex-col items-center justify-center gap-1.5 py-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-soft active:scale-[0.97]">
               <CheckSquare className="h-4 w-4" /> Task
             </Button>
           }
         />
-        <Button variant="outline" size="sm" className="w-full flex-col gap-1.5 py-4" onClick={handleQuickNote}>
+        <Button variant="outline" size="sm" className="h-auto w-full flex-col items-center justify-center gap-1.5 py-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-soft active:scale-[0.97]" onClick={handleQuickNote}>
           <NotebookText className="h-4 w-4" /> Note
         </Button>
       </div>

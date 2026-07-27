@@ -45,6 +45,7 @@
     --success: 152 55% 34%;
     --warning: 37 100% 44%;
 
+    --shadow-color: 220 45% 18%;
     --radius: 0.75rem;
   }
 
@@ -82,6 +83,8 @@
 
     --success: 152 60% 55%;
     --warning: 37 90% 55%;
+
+    --shadow-color: 222 65% 3%;
   }
 }
 
@@ -109,13 +112,18 @@
 
   /* The signature "margin tab" — a small notched label that reads like a
      sticky index tab on a notebook page. Used on dashboard widgets and
-     section headers to encode category, the way tabs encode a subject. */
+     section headers to encode category, the way tabs encode a subject.
+     The accent rule "draws in" top-to-bottom on mount, like a highlighter
+     stroke — the one deliberate motion moment, tied directly to the
+     brand's own notebook-margin metaphor rather than generic entrance
+     motion. */
   .margin-tab {
     @apply relative pl-3;
   }
   .margin-tab::before {
     content: "";
-    @apply absolute left-0 top-1 bottom-1 w-[3px] rounded-full bg-accent;
+    @apply absolute left-0 top-1 bottom-1 w-[3px] rounded-full bg-accent origin-top;
+    animation: tab-draw 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
   .skeleton {
@@ -135,5 +143,19 @@
   }
   .scrollbar-thin::-webkit-scrollbar-thumb {
     @apply bg-border rounded-full;
+  }
+}
+
+/* Real reduced-motion support — DESIGN.md has always described this as a
+   principle, but nothing in the codebase actually implemented it before
+   now. Every animation/transition collapses to functionally instant. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

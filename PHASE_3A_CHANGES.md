@@ -96,3 +96,34 @@ already accepted in `generate-items` (delete+insert, no transaction). Fine
 at personal scale; if it ever bites, the fix is wrapping
 `api/timetable-import/[id]/import/route.ts`'s logic in a single `plpgsql`
 function called via `.rpc(...)`.
+
+## Follow-up: student batch field (post-launch addition)
+
+Added after initial testing surfaced that some divisions split into
+parallel lab batches (e.g. Division A → batches A1/A2, each doing a
+different lab in a different room at the same time). Without knowing
+which batch a student is in, the AI had to guess — which would silently
+produce wrong attendance data for one batch's worth of students on every
+affected lab slot.
+
+**New migration:** `0008_profile_batch.sql` — adds `profiles.batch`
+(nullable text, e.g. `"A1"`). Purely additive; every existing profile is
+unaffected.
+
+**Collected in two places:**
+- Onboarding flow, step "Academic details" (optional field, doesn't block
+  completion).
+- Settings → Profile (the more important entry point in practice, since
+  every existing student already onboarded before this field existed).
+
+**Used by:** `ai-structure.ts`'s system prompt — when a cell shows two
+labeled parallel sessions, it now matches against the student's actual
+batch instead of defaulting to "first line, low confidence." Falls back
+to the old first-line/low-confidence behavior only if batch is unset or
+doesn't match anything in the document (e.g. a student who hasn't filled
+it in yet, or a document using an unexpected labeling convention).
+
+**Not required.** A student who never sets a batch loses nothing — they
+get the same best-effort fallback behavior as before this addition, they
+just won't get the disambiguation benefit until they fill it in via
+Settings.

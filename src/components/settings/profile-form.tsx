@@ -41,6 +41,7 @@ export function ProfileForm() {
         semester: profile.semester ?? "",
         academicYear: profile.academic_year ?? "",
         rollNumber: profile.roll_number ?? "",
+        batch: profile.batch ?? "",
       });
     }
   }, [profile, reset]);
@@ -77,6 +78,7 @@ export function ProfileForm() {
         semester: values.semester,
         academic_year: values.academicYear,
         roll_number: values.rollNumber,
+        batch: values.batch || null,
       })
       .eq("id", user.id);
 
@@ -166,6 +168,15 @@ export function ProfileForm() {
             <div className="space-y-1.5">
               <Label htmlFor="rollNumber">Roll number</Label>
               <Input id="rollNumber" {...register("rollNumber")} />
+            </div>
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label htmlFor="batch">Batch (optional)</Label>
+              <Input id="batch" placeholder="e.g. A1" {...register("batch")} />
+              <p className="text-xs text-muted-foreground">
+                If your division splits into batches for labs/practicals, enter yours — named after your
+                division, e.g. A1 or A2 for Division A. This helps the AI timetable import pick the right
+                lab when your timetable shows parallel batch sessions.
+              </p>
             </div>
           </div>
         </CardContent>

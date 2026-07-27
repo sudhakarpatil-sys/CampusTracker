@@ -171,7 +171,6 @@ export function useTimetableImport() {
           userId,
           json.detected.branch,
           json.detected.semester,
-          json.detected.division,
           importId
         );
       }

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion, useReducedMotion } from "framer-motion";
 import { ChevronsLeft, NotebookPen } from "lucide-react";
 import { NAV_ITEMS, APP_NAME } from "@/lib/constants";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +16,7 @@ interface SidebarProps {
 
 export function Sidebar({ collapsed, onToggle, onNavigate }: SidebarProps) {
   const pathname = usePathname();
+  const prefersReducedMotion = useReducedMotion();
 
   return (
     <div className="flex h-full flex-col bg-surface">
@@ -36,15 +38,22 @@ export function Sidebar({ collapsed, onToggle, onNavigate }: SidebarProps) {
               href={item.href as never}
               onClick={onNavigate}
               className={cn(
-                "group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                isActive ? "bg-accent/15 text-accent" : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                "group relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium",
+                isActive ? "text-accent" : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 collapsed && "justify-center px-0"
               )}
               title={collapsed ? item.label : undefined}
             >
-              <item.icon className="h-4 w-4 shrink-0" />
+              {isActive && (
+                <motion.span
+                  layoutId="sidebar-active-pill"
+                  className="absolute inset-0 rounded-md bg-accent/15"
+                  transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 420, damping: 34 }}
+                />
+              )}
+              <item.icon className="relative z-10 h-4 w-4 shrink-0" />
               {!collapsed && (
-                <span className="flex flex-1 items-center justify-between">
+                <span className="relative z-10 flex flex-1 items-center justify-between">
                   {item.label}
                   {item.comingSoon && (
                     <Badge variant="secondary" className="ml-2 px-1.5 py-0 text-[10px]">

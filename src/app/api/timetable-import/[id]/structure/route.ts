@@ -26,7 +26,7 @@ export async function POST(_request: Request, { params }: { params: { id: string
   try {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("branch, semester, academic_year")
+      .select("branch, semester, academic_year, batch")
       .eq("id", user.id)
       .single();
 
@@ -34,6 +34,7 @@ export async function POST(_request: Request, { params }: { params: { id: string
       branch: profile?.branch ?? null,
       semester: profile?.semester ?? null,
       academicYear: profile?.academic_year ?? null,
+      batch: profile?.batch ?? null,
     };
 
     const structured =

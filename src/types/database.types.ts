@@ -32,6 +32,7 @@ export interface Database {
           semester: string | null;
           academic_year: string | null;
           roll_number: string | null;
+          batch: string | null;
           onboarding_completed: boolean;
           created_at: string;
           updated_at: string;

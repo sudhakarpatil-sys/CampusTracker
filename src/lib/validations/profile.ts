@@ -8,6 +8,7 @@ export const profileSchema = z.object({
   semester: z.string().min(1, "Select a semester"),
   academicYear: z.string().min(4, "Enter your academic year"),
   rollNumber: z.string().min(1, "Enter your roll number"),
+  batch: z.string().optional(),
 });
 export type ProfileInput = z.infer<typeof profileSchema>;
 

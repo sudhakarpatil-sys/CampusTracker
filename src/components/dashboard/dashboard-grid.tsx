@@ -84,7 +84,8 @@ export function DashboardGrid() {
               key={id}
               onDragOver={(e) => e.preventDefault()}
               onDrop={() => handleDrop(realIndex)}
-              className="animate-fade-up"
+              className="animate-fade-up transition-transform duration-300 hover:-translate-y-0.5"
+              style={{ animationDelay: `${realIndex * 60}ms` }}
             >
               <Component
                 onHide={() => toggleHidden(id)}

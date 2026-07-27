@@ -20,7 +20,7 @@ import { toast } from "@/hooks/use-toast";
 const STEPS: { title: string; fields: (keyof OnboardingInput)[] }[] = [
   { title: "About you", fields: ["fullName"] },
   { title: "Your institution", fields: ["collegeName", "university", "department", "branch"] },
-  { title: "Academic details", fields: ["semester", "academicYear", "rollNumber"] },
+  { title: "Academic details", fields: ["semester", "academicYear", "rollNumber", "batch"] },
 ];
 
 export function OnboardingFlow() {
@@ -70,6 +70,7 @@ export function OnboardingFlow() {
         semester: values.semester,
         academic_year: values.academicYear,
         roll_number: values.rollNumber,
+        batch: values.batch || null,
         avatar_url: avatarUrl ?? undefined,
         onboarding_completed: true,
       } as never);
@@ -178,6 +179,15 @@ export function OnboardingFlow() {
               <Label htmlFor="rollNumber">Roll number</Label>
               <Input id="rollNumber" placeholder="21CS1042" {...register("rollNumber")} />
               {errors.rollNumber && <p className="text-xs text-destructive">{errors.rollNumber.message}</p>}
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="batch">Batch (optional)</Label>
+              <Input id="batch" placeholder="e.g. A1" {...register("batch")} />
+              <p className="text-xs text-muted-foreground">
+                If your division splits into batches for labs/practicals, enter yours — named after your
+                division, e.g. A1 or A2 for Division A. Leave blank if not applicable.
+              </p>
+              {errors.batch && <p className="text-xs text-destructive">{errors.batch.message}</p>}
             </div>
           </div>
         )}

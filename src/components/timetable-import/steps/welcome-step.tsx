@@ -21,8 +21,8 @@ export function WelcomeStep({ onContinue }: { onContinue: () => void }) {
         Let&apos;s build your timetable
       </h1>
       <p className="mx-auto mt-3 max-w-md text-sm text-muted-foreground">
-        Upload one timetable file and CampusTracker sets up your subjects, lectures, and attendance
-        tracking — no manual entry required.
+        Upload your own division&apos;s timetable file and CampusTracker sets up your subjects, lectures,
+        and attendance tracking — no manual entry required.
       </p>
 
       <div className="mx-auto mt-8 grid max-w-sm gap-3 text-left">

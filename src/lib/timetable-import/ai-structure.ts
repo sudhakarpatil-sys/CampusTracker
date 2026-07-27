@@ -3,27 +3,35 @@ import { aiStructuredTimetableSchema, type AiStructuredTimetable } from "@/lib/v
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? "");
 
-// Free-tier model — no card required via Google AI Studio. If you hit
-// daily rate limits (250 req/day on Flash), "gemini-2.5-flash-lite" has a
-// more generous free quota (~1,000 req/day) at slightly lower quality —
-// a one-line swap here if needed.
+// Free-tier model, no card required via Google AI Studio. Google
+// deprecated gemini-2.5-flash for newly-created API keys (404 "no longer
+// available to new users") shortly after this pipeline was first built —
+// gemini-3.1-flash-lite is the current free-tier model for new keys as of
+// mid-2026. If quality on messy scans isn't good enough, gemini-3.5-flash
+// is the next step up — check your AI Studio dashboard for current free-
+// tier status before switching, since availability shifts frequently.
 const MODEL = "gemini-3.1-flash-lite";
 
 interface StudentContext {
   branch: string | null;
   semester: string | null;
   academicYear: string | null;
+  batch: string | null;
 }
 
-function buildSystemPrompt({ branch, semester, academicYear }: StudentContext) {
+function buildSystemPrompt({ branch, semester, academicYear, batch }: StudentContext) {
   return `You read college timetable documents and convert them into strict JSON.
 
-The document may contain multiple branches, semesters, or divisions on the
-same page, or across multiple pages (e.g. one page per branch). The
-student's own profile is: branch="${branch ?? "unknown"}",
-semester="${semester ?? "unknown"}", academic_year="${academicYear ?? "unknown"}".
-Find and use ONLY the block of the timetable that matches this student's
-branch — ignore every other branch present in the document.
+Students are instructed to upload only their own division's timetable, so
+assume the document is already scoped to one class — extract every
+lecture you find as-is, without trying to filter by division.
+
+The document may still contain multiple branches or semesters if a
+student accidentally uploaded a wider institute-wide sheet. The student's
+own profile is: branch="${branch ?? "unknown"}", semester="${semester ?? "unknown"}",
+academic_year="${academicYear ?? "unknown"}". If more than one branch or
+semester is present, use only the block matching this student's branch
+and semester; ignore the rest.
 
 Expand common abbreviations using context (e.g. "AOA" -> "Analysis of
 Algorithms", "DBMS" -> "Database Management Systems", "COA" -> "Computer
@@ -31,14 +39,6 @@ Organization & Architecture") when confident, otherwise keep the original
 abbreviation as the name.
 
 Additional parsing rules, based on real timetable formats:
-- If a time cell contains multiple lines, each tagged with a different
-  division in parentheses (e.g. "(A1)" vs "(A2)", or "(B1)" vs "(B2)"),
-  these are SIMULTANEOUS parallel sessions for different divisions, not
-  one combined class. If the student's division is known, keep only the
-  line matching it and discard the others. If the division is unknown,
-  include all of them but mark each with confidence "low" and set the
-  slot's classroom/faculty from its own line only — never merge two
-  divisions' details into one slot.
 - Ignore any column labeled "Short Break" or "Long Break" — these are
   structural, not lecture slots.
 - If a subject code appears in the weekly grid but has no row in the
@@ -48,6 +48,19 @@ Additional parsing rules, based on real timetable formats:
 - A merged cell spanning two consecutive time columns (e.g. a lab from
   08:30-10:30 shown as one wide cell instead of two separate hour cells)
   is ONE slot with the full start_time/end_time span, not two.
+- On the rare chance a cell shows two sub-batches running in parallel at
+  the same time (e.g. one line tagged "(A1)" and another "(A2)", or
+  similarly labeled halves of the same division doing different labs
+  simultaneously in different rooms), treat this as ONE lecture slot, not
+  two. This student's batch is "${batch ?? "unknown"}". If the batch is
+  known, keep the line whose label matches it (ignore case, spacing, and
+  parentheses when comparing — "A1", "a1", and "(A1)" all match) and use
+  that line's subject/faculty/classroom. If the batch is unknown, or
+  doesn't match any line shown, keep the FIRST line as a fallback and
+  mark that slot's confidence "low". Never emit both lines as separate
+  simultaneous slots — that would show as two overlapping classes a
+  student can't actually attend at once, and attendance is tracked per
+  timeslot, not per batch.
 
 Respond with ONLY JSON matching this exact shape — no markdown, no
 commentary, no surrounding text:
@@ -55,6 +68,11 @@ commentary, no surrounding text:
 "detection_confidence":{"branch":"high"|"medium"|"low","semester":"high"|"medium"|"low","academic_year":"high"|"medium"|"low","division":"high"|"medium"|"low"},
 "subjects":[{"name":string,"code":string|null,"short_name":string|null,"faculty_name":string|null,"subject_type":"theory"|"lab"|"elective"|"other"|null,"credits":number|null,"confidence":"high"|"medium"|"low"}],
 "slots":[{"subject_name":string,"day_of_week":1-7 (1=Monday, 7=Sunday),"start_time":"HH:MM","end_time":"HH:MM","faculty_name":string|null,"classroom":string|null,"lecture_type":"lecture"|"lab"|"tutorial"|"other"|null,"confidence":"high"|"medium"|"low"}]}
+
+"division" in "detected" is informational only (include it if the
+document happens to label one, e.g. a header showing "Division: A1") —
+it is never used to filter content, since the student already uploaded
+their own division's sheet.
 
 Every "subject_name" in "slots" must exactly match a "name" in "subjects".
 If a field can't be detected, use null and mark confidence "low" — never
