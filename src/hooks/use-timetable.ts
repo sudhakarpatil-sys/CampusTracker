@@ -9,6 +9,7 @@ export function useTimetable() {
   const { data, isLoading, refetch, supabase, userId } = useSupabaseCollection<TimetableSlot>({
     table: "timetable_slots",
     orderBy: { column: "start_time", ascending: true },
+    match: { is_archived: false },
   });
 
   async function createSlot(input: TimetableSlotInput) {

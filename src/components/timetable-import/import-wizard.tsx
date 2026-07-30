@@ -136,12 +136,12 @@ export function ImportWizard() {
       setDuplicateStage(null);
       setPendingFile(null);
       setPendingChecksum(null);
-      await runImportPipeline(file, checksum, { resolution, replacesImportId: dup.id });
+      await runImportPipeline(file, checksum, { resolution, replacesImportId: dup.id ?? undefined });
       return;
     }
 
     if (duplicateStage === "content" && activeImportId) {
-      await setDuplicateResolution(activeImportId, resolution, resolution === "replace" ? duplicate.id : undefined);
+      await setDuplicateResolution(activeImportId, resolution, resolution === "replace" ? (duplicate.id ?? undefined) : undefined);
       setDuplicate(null);
       setDuplicateStage(null);
       const generated = await generateTimetableItems(activeImportId);

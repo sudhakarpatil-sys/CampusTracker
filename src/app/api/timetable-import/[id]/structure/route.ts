@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { structureFromText, structureFromDocument } from "@/lib/timetable-import/ai-structure";
 import { matchExistingSubject } from "@/lib/timetable-import/subject-matching";
+import { resolveBatchVariants } from "@/lib/timetable-import/batch-resolution";
 
 export async function POST(_request: Request, { params }: { params: { id: string } }) {
   const supabase = createClient();
@@ -60,6 +61,12 @@ export async function POST(_request: Request, { params }: { params: { id: string
       matched_subject_id: matchExistingSubject(subject.name, subject.code, existingSubjects ?? [])?.id ?? null,
     }));
 
+    // Deterministic step: the AI reports every parallel-batch variant it
+    // sees (batch_label per slot); picking the one matching this
+    // student's actual batch happens here, not in the prompt — see
+    // batch-resolution.ts for why.
+    const resolvedSlots = resolveBatchVariants(structured.slots, context.batch);
+
     const { error: updateError } = await supabase
       .from("timetable_imports")
       .update({
@@ -68,7 +75,7 @@ export async function POST(_request: Request, { params }: { params: { id: string
         detected_academic_year: structured.detected.academic_year,
         detected_division: structured.detected.division,
         detection_confidence: structured.detection_confidence,
-        extracted_payload: { subjects: subjectsWithMatches, slots: structured.slots },
+        extracted_payload: { subjects: subjectsWithMatches, slots: resolvedSlots },
       } as never)
       .eq("id", importRow.id);
 
@@ -76,7 +83,7 @@ export async function POST(_request: Request, { params }: { params: { id: string
 
     return NextResponse.json({
       subjects: subjectsWithMatches,
-      slotCount: structured.slots.length,
+      slotCount: resolvedSlots.length,
       detected: structured.detected,
     });
   } catch (err) {

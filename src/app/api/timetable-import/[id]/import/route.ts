@@ -43,20 +43,27 @@ export async function POST(_request: Request, { params }: { params: { id: string
   }
 
   try {
-    // Replace: clear only the slots this specific prior import produced,
-    // never a blanket delete — manually-added lectures are untouched.
-    if (importRow.duplicate_resolution === "replace" && importRow.replaces_import_id) {
-      const { error: deleteSlotsError } = await supabase
+    // Replace: archive every currently-active slot this student has —
+    // not just ones tied to one specific prior import — since duplicates
+    // can come from more than one source (a previous AI import, a manual
+    // entry, or an earlier failed attempt). Archiving (never deleting)
+    // means attendance_records keep their full timetable_slot_id link
+    // and every historical day/time/faculty/room detail, forever.
+    if (importRow.duplicate_resolution === "replace") {
+      const { error: archiveError } = await supabase
         .from("timetable_slots")
-        .delete()
-        .eq("source_import_id", importRow.replaces_import_id);
-      if (deleteSlotsError) {
-        throw new Error(`Couldn't clear the previous version: ${deleteSlotsError.message}`);
+        .update({ is_archived: true } as never)
+        .eq("user_id", user.id)
+        .eq("is_archived", false);
+      if (archiveError) {
+        throw new Error(`Couldn't archive the previous timetable: ${archiveError.message}`);
       }
-      await supabase
-        .from("timetable_imports")
-        .update({ status: "superseded", superseded_by: importRow.id } as never)
-        .eq("id", importRow.replaces_import_id);
+      if (importRow.replaces_import_id) {
+        await supabase
+          .from("timetable_imports")
+          .update({ status: "superseded", superseded_by: importRow.id } as never)
+          .eq("id", importRow.replaces_import_id);
+      }
     }
 
     const payload = importRow.extracted_payload as { subjects: ExtractedSubjectDetail[] } | null;

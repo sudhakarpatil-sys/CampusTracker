@@ -2,7 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database.types";
 
 export interface DuplicateCandidate {
-  id: string;
+  id: string | null;
   original_filename: string;
   version_number: number;
   created_at: string;
@@ -28,32 +28,42 @@ export async function findChecksumDuplicate(
   return (data as DuplicateCandidate | null) ?? null;
 }
 
-/** Different file, same academic content already imported (e.g. a
- * revised timetable for the same branch/semester). Scoped to this
- * student's own imports already, so division isn't needed as a filter —
- * a student only ever uploads their own division's sheet. Only checkable
- * once AI structuring has run. */
-export async function findContentDuplicate(
+/** A student's currently active timetable — regardless of which import
+ * (or manual entry) created each slot. Only checkable once we know
+ * whether any active slots exist at all. */
+export async function findActiveTimetableDuplicate(
   supabase: SupabaseClient<Database>,
   userId: string,
-  branch: string | null,
-  semester: string | null,
   excludeImportId: string
 ): Promise<DuplicateCandidate | null> {
-  if (!branch || !semester) return null;
+  const { count } = await supabase
+    .from("timetable_slots")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .eq("is_archived", false);
 
-  const { data } = await supabase
+  if (!count || count === 0) return null;
+
+  // Prefer referencing the most recent successful AI import for the
+  // dialog's filename/version display, if there is one.
+  const { data: lastImport } = await supabase
     .from("timetable_imports")
     .select("id, original_filename, version_number, created_at, status")
     .eq("user_id", userId)
     .eq("status", "imported")
-    .eq("detected_branch", branch)
-    .eq("detected_semester", semester)
     .neq("id", excludeImportId)
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
-  return (data as DuplicateCandidate | null) ?? null;
+
+  if (lastImport) return lastImport as DuplicateCandidate;
+
+  // Active slots exist but weren't traced to a specific prior AI import
+  // (e.g. a hand-built timetable) — still worth asking, just without a
+  // specific file/version to point to. `id: null` means Replace archives
+  // by ownership (all of this user's active slots) rather than by a
+  // specific source_import_id.
+  return { id: null, original_filename: "your current timetable", version_number: 0, created_at: new Date().toISOString(), status: "imported" };
 }
 
 /** Lightweight cost guard for a free-tier AI provider — caps AI-call-

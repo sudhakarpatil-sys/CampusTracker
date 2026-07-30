@@ -24,7 +24,7 @@ const KNOWN_ABBREVIATIONS: Record<string, string> = {
   amt: "Applied Mathematics Thinking",
   dmsa: "Database Management System & Application",
   enas: "Electrical Networks Analysis & Synthesis",
-  "m-iii": "Mathematics-III",
+  miii: "Mathematics-III",
   eds: "Embedded Design & Systems",
 };
 

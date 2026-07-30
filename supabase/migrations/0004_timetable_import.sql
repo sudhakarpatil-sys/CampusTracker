@@ -41,11 +41,13 @@ create index if not exists timetable_imports_checksum_idx on public.timetable_im
 
 alter table public.timetable_imports enable row level security;
 
+drop policy if exists "Timetable imports are manageable by their owner" on public.timetable_imports;
 create policy "Timetable imports are manageable by their owner"
   on public.timetable_imports for all
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
 
+drop trigger if exists set_timetable_imports_updated_at on public.timetable_imports;
 create trigger set_timetable_imports_updated_at
   before update on public.timetable_imports
   for each row execute function public.set_updated_at();
@@ -76,11 +78,13 @@ create index if not exists timetable_import_items_user_id_idx on public.timetabl
 
 alter table public.timetable_import_items enable row level security;
 
+drop policy if exists "Timetable import items are manageable by their owner" on public.timetable_import_items;
 create policy "Timetable import items are manageable by their owner"
   on public.timetable_import_items for all
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
 
+drop trigger if exists set_timetable_import_items_updated_at on public.timetable_import_items;
 create trigger set_timetable_import_items_updated_at
   before update on public.timetable_import_items
   for each row execute function public.set_updated_at();

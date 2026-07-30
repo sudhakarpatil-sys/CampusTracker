@@ -37,6 +37,7 @@ export const aiDetectedSlotSchema = z.object({
   faculty_name: z.string().nullable(),
   classroom: z.string().nullable(),
   lecture_type: z.enum(["lecture", "lab", "tutorial", "other"]).nullable(),
+  batch_label: z.string().nullable(),
   confidence: confidenceSchema,
 });
 export type AiDetectedSlot = z.infer<typeof aiDetectedSlotSchema>;

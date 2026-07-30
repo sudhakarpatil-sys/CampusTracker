@@ -19,7 +19,7 @@ interface StudentContext {
   batch: string | null;
 }
 
-function buildSystemPrompt({ branch, semester, academicYear, batch }: StudentContext) {
+function buildSystemPrompt({ branch, semester, academicYear }: StudentContext) {
   return `You read college timetable documents and convert them into strict JSON.
 
 Students are instructed to upload only their own division's timetable, so
@@ -47,27 +47,39 @@ Additional parsing rules, based on real timetable formats:
   omitting it.
 - A merged cell spanning two consecutive time columns (e.g. a lab from
   08:30-10:30 shown as one wide cell instead of two separate hour cells)
-  is ONE slot with the full start_time/end_time span, not two.
+  is ONE slot with the full start_time/end_time span, not two — this
+  applies even when that same merged cell also shows two parallel
+  batches (see next rule).
 - On the rare chance a cell shows two sub-batches running in parallel at
   the same time (e.g. one line tagged "(A1)" and another "(A2)", or
   similarly labeled halves of the same division doing different labs
-  simultaneously in different rooms), treat this as ONE lecture slot, not
-  two. This student's batch is "${batch ?? "unknown"}". If the batch is
-  known, keep the line whose label matches it (ignore case, spacing, and
-  parentheses when comparing — "A1", "a1", and "(A1)" all match) and use
-  that line's subject/faculty/classroom. If the batch is unknown, or
-  doesn't match any line shown, keep the FIRST line as a fallback and
-  mark that slot's confidence "low". Never emit both lines as separate
-  simultaneous slots — that would show as two overlapping classes a
-  student can't actually attend at once, and attendance is tracked per
-  timeslot, not per batch.
+  simultaneously in different rooms), emit BOTH as separate slot entries
+  sharing the exact same day_of_week/start_time/end_time (using the full
+  merged-cell span from the rule above). Set each one's "batch_label"
+  field to that line's label with parentheses/spacing stripped (e.g.
+  "(A1)" becomes "A1"). Do not try to guess which batch the student is
+  in, and do not drop either line — report every batch variant you see
+  exactly as shown; a separate deterministic step, not you, picks the
+  correct one afterward. For any slot that is NOT part of a
+  parallel-batch cell, set "batch_label" to null.
+
+  Worked example: a Monday 08:30-10:30 cell reads:
+    "SUBJ1 (A1) Faculty1 (Room1)
+     SUBJ2 (A2) Faculty2 (Room2)"
+  Emit TWO slots sharing day_of_week 1, start_time "08:30", end_time
+  "10:30": one with subject_name expanded from "SUBJ1", faculty_name
+  expanded/matched from "Faculty1", classroom "Room1", batch_label "A1";
+  another with subject_name expanded from "SUBJ2", faculty_name from
+  "Faculty2", classroom "Room2", batch_label "A2". Do NOT collapse these
+  into one slot, do NOT pick just one, and do NOT split the 2-hour span
+  into separate 1-hour entries.
 
 Respond with ONLY JSON matching this exact shape — no markdown, no
 commentary, no surrounding text:
 {"detected":{"branch":string|null,"semester":string|null,"academic_year":string|null,"division":string|null},
 "detection_confidence":{"branch":"high"|"medium"|"low","semester":"high"|"medium"|"low","academic_year":"high"|"medium"|"low","division":"high"|"medium"|"low"},
 "subjects":[{"name":string,"code":string|null,"short_name":string|null,"faculty_name":string|null,"subject_type":"theory"|"lab"|"elective"|"other"|null,"credits":number|null,"confidence":"high"|"medium"|"low"}],
-"slots":[{"subject_name":string,"day_of_week":1-7 (1=Monday, 7=Sunday),"start_time":"HH:MM","end_time":"HH:MM","faculty_name":string|null,"classroom":string|null,"lecture_type":"lecture"|"lab"|"tutorial"|"other"|null,"confidence":"high"|"medium"|"low"}]}
+"slots":[{"subject_name":string,"day_of_week":1-7 (1=Monday, 7=Sunday),"start_time":"HH:MM","end_time":"HH:MM","faculty_name":string|null,"classroom":string|null,"lecture_type":"lecture"|"lab"|"tutorial"|"other"|null,"batch_label":string|null,"confidence":"high"|"medium"|"low"}]}
 
 "division" in "detected" is informational only (include it if the
 document happens to label one, e.g. a header showing "Division: A1") —

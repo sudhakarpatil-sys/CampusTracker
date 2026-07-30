@@ -94,6 +94,7 @@ export interface Database {
           faculty_name: string | null;
           classroom: string | null;
           source_import_id: string | null;
+          is_archived: boolean;
           created_at: string;
           updated_at: string;
         },

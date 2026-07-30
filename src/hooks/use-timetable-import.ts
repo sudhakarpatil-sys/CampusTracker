@@ -7,7 +7,7 @@ import { toast } from "@/hooks/use-toast";
 import { timetableUploadSchema, type DetectedSubjectWithMatch } from "@/lib/validations/timetable-import";
 import {
   findChecksumDuplicate,
-  findContentDuplicate,
+  findActiveTimetableDuplicate,
   countRecentUploads,
   MAX_UPLOADS_PER_DAY,
   type DuplicateCandidate,
@@ -165,14 +165,8 @@ export function useTimetableImport() {
       }
 
       let duplicate: DuplicateCandidate | null = null;
-      if (userId && json.detected) {
-        duplicate = await findContentDuplicate(
-          supabase,
-          userId,
-          json.detected.branch,
-          json.detected.semester,
-          importId
-        );
+      if (userId) {
+        duplicate = await findActiveTimetableDuplicate(supabase, userId, importId);
       }
 
       refetch();
