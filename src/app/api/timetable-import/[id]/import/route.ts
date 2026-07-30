@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { safeTimeToMinutes } from "@/lib/timetable-import/timetable-generation";
 
 const SUBJECT_COLOR_PALETTE = ["#F5A623", "#4A90D9", "#7ED321", "#BD10E0", "#50E3C2", "#E94E77"];
 
@@ -38,6 +39,27 @@ export async function POST(_request: Request, { params }: { params: { id: string
   if (!items || items.length === 0) {
     return NextResponse.json(
       { error: "No lectures are included — check at least one before importing" },
+      { status: 400 }
+    );
+  }
+
+  // Defense in depth: the review screen already blocks this, but validate
+  // again here so no path (a stale client, a future edit surface, bad
+  // AI output) can ever surface the raw timetable_slots_time_order
+  // constraint violation to the user instead of a clear message.
+  const invalidItems = items.filter((item) => {
+    const start = safeTimeToMinutes(item.start_time ?? "");
+    const end = safeTimeToMinutes(item.end_time ?? "");
+    return start === null || end === null || end <= start;
+  });
+  if (invalidItems.length > 0) {
+    const details = invalidItems
+      .map((item) => `${item.subject_name_raw} (${item.start_time}–${item.end_time})`)
+      .join(", ");
+    return NextResponse.json(
+      {
+        error: `${invalidItems.length} included lecture${invalidItems.length > 1 ? "s have" : " has"} an invalid time range and can't be imported: ${details}. Go back to Review and fix or exclude ${invalidItems.length > 1 ? "them" : "it"}.`,
+      },
       { status: 400 }
     );
   }

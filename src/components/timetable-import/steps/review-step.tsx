@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTimetableImportItems } from "@/hooks/use-timetable-import-items";
 import { useSubjects } from "@/hooks/use-subjects";
+import { safeTimeToMinutes } from "@/lib/timetable-import/timetable-generation";
 import { TimetablePreviewGrid } from "@/components/timetable-import/timetable-preview-grid";
 import type { TimetableImport, TimetableImportItem } from "@/types/database.types";
 
@@ -29,6 +30,16 @@ const CONFIDENCE_VARIANT: Record<string, "success" | "accent" | "destructive"> =
   low: "destructive",
 };
 const NEW_SUBJECT_VALUE = "__new__";
+
+/** conflict_reason is a snapshot computed once during AI structuring — it
+ * doesn't update when the user edits start/end time in this screen, so a
+ * bad edit (end before start) would otherwise sail through to the DB and
+ * hit the timetable_slots_time_order check constraint. Re-check live. */
+function hasInvalidTimeRange(item: TimetableImportItem): boolean {
+  const start = safeTimeToMinutes(item.start_time ?? "");
+  const end = safeTimeToMinutes(item.end_time ?? "");
+  return start === null || end === null || end <= start;
+}
 
 interface ReviewStepProps {
   importRow: TimetableImport;
@@ -52,6 +63,7 @@ export function ReviewStep({ importRow, isImporting, onBack, onConfirm }: Review
 
   const conflictCount = items.filter((i) => i.conflict_reason).length;
   const includedCount = items.filter((i) => i.is_included).length;
+  const includedInvalidCount = items.filter((i) => i.is_included && hasInvalidTimeRange(i)).length;
 
   return (
     <Card className="p-6 sm:p-8">
@@ -79,6 +91,16 @@ export function ReviewStep({ importRow, isImporting, onBack, onConfirm }: Review
         </div>
       )}
 
+      {includedInvalidCount > 0 && (
+        <div className="mt-4 flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+          <p className="text-xs text-muted-foreground">
+            {includedInvalidCount} included lecture{includedInvalidCount === 1 ? " has" : "s have"} an end time at or
+            before its start time — fix the time or uncheck it before importing.
+          </p>
+        </div>
+      )}
+
       <Tabs defaultValue="list" className="mt-6">
         <TabsList>
           <TabsTrigger value="list">List</TabsTrigger>
@@ -94,12 +116,14 @@ export function ReviewStep({ importRow, isImporting, onBack, onConfirm }: Review
                   {day === 0 ? "Needs a day set" : DAY_LABELS[day]}
                 </p>
                 <div className="space-y-2">
-                  {dayItems.map((item) => (
+                  {dayItems.map((item) => {
+                    const timeInvalid = hasInvalidTimeRange(item);
+                    return (
                     <div
                       key={item.id}
                       className={
                         "margin-tab grid grid-cols-1 items-center gap-3 rounded-lg border border-border bg-surface-raised p-3 sm:grid-cols-[auto_1.4fr_1fr_1fr_1fr_auto]" +
-                        (item.conflict_reason ? " border-destructive/40" : "")
+                        (item.conflict_reason || (item.is_included && timeInvalid) ? " border-destructive/40" : "")
                       }
                     >
                       <Checkbox
@@ -153,8 +177,14 @@ export function ReviewStep({ importRow, isImporting, onBack, onConfirm }: Review
                       {item.conflict_reason && (
                         <p className="col-span-full text-xs text-destructive">{item.conflict_reason}</p>
                       )}
+                      {!item.conflict_reason && item.is_included && timeInvalid && (
+                        <p className="col-span-full text-xs text-destructive">
+                          End time must be after the start time.
+                        </p>
+                      )}
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             ))}
@@ -169,7 +199,7 @@ export function ReviewStep({ importRow, isImporting, onBack, onConfirm }: Review
         <Button variant="ghost" onClick={onBack} disabled={isImporting}>
           <ArrowLeft className="h-4 w-4" /> Start over
         </Button>
-        <Button onClick={onConfirm} disabled={isImporting || includedCount === 0}>
+        <Button onClick={onConfirm} disabled={isImporting || includedCount === 0 || includedInvalidCount > 0}>
           {isImporting ? "Importing…" : `Confirm & import (${includedCount})`}
         </Button>
       </div>
