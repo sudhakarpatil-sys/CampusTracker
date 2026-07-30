@@ -1,15 +1,23 @@
 import { timeToMinutes } from "@/lib/academic";
 import type { AiDetectedSlot } from "@/lib/validations/timetable-import";
 
-const TIME_FORMAT = /^\d{1,2}:\d{2}$/;
+const TIME_FORMAT = /^\d{1,2}:\d{2}(:\d{2})?$/;
 
 /** `timeToMinutes` (lib/academic.ts) assumes well-formed "HH:MM" input and
  * happily returns NaN/garbage on anything else — fine for rendering
  * already-valid DB rows, not safe for untrusted AI output. This wraps it
- * with the format + range check AI-generated times actually need. */
+ * with the format + range check AI-generated times actually need.
+ *
+ * Accepts both raw AI-extracted "HH:MM" strings (pre-DB-write, in memory)
+ * and "HH:MM:SS" strings — Postgres `time` columns come back from
+ * Supabase with seconds, which this needs to tolerate since it's also
+ * used to re-validate values already round-tripped through the DB
+ * (e.g. in the Review step and the final import route). */
 export function safeTimeToMinutes(time: string): number | null {
-  if (!TIME_FORMAT.test(time.trim())) return null;
-  const minutes = timeToMinutes(time.trim());
+  const trimmed = time.trim();
+  if (!TIME_FORMAT.test(trimmed)) return null;
+  const [hours, mins] = trimmed.split(":");
+  const minutes = timeToMinutes(`${hours}:${mins}`);
   if (Number.isNaN(minutes) || minutes < 0 || minutes >= 24 * 60) return null;
   return minutes;
 }
