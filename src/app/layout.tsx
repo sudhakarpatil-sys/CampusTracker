@@ -19,6 +19,10 @@ const fontMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" })
 export const metadata: Metadata = {
   title: { default: `${APP_NAME} — Your academic life, organized`, template: `%s · ${APP_NAME}` },
   description: APP_DESCRIPTION,
+  icons: {
+    icon: "/icon.svg",
+    apple: "/apple-icon.svg",
+  },
 };
 
 export const viewport: Viewport = {

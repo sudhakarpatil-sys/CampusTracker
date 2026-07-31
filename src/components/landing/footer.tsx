@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { GraduationCap } from "lucide-react";
+import { Logo } from "@/components/shared/logo";
 import { APP_NAME } from "@/lib/constants";
 
 const COLUMNS = [
@@ -25,11 +25,8 @@ export function Footer() {
     <footer className="border-t border-border/60 bg-card/60 py-12">
       <div className="container flex flex-col gap-10 sm:flex-row sm:justify-between">
         <div className="max-w-xs">
-          <Link href="/" className="flex items-center gap-2.5 font-display text-lg font-bold">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 via-violet-600 to-purple-600 text-white shadow-md shadow-indigo-500/20">
-              <GraduationCap className="h-5 w-5" />
-            </span>
-            <span className="font-extrabold text-foreground">{APP_NAME}</span>
+          <Link href="/">
+            <Logo size="sm" />
           </Link>
           <p className="mt-3 text-xs text-muted-foreground leading-relaxed">
             Your entire academic life, effortlessly organized in one calm workspace.

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Menu, GraduationCap, X, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
+import { Logo } from "@/components/shared/logo";
 import { APP_NAME } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
@@ -36,11 +37,8 @@ export function Navbar() {
       )}
     >
       <div className="container flex h-16 items-center justify-between">
-        <Link href="/" className="flex items-center gap-2.5 font-display text-lg font-bold tracking-tight">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 via-violet-600 to-purple-600 text-white shadow-md shadow-indigo-500/20">
-            <GraduationCap className="h-5 w-5" />
-          </span>
-          <span className="font-extrabold text-foreground">{APP_NAME}</span>
+        <Link href="/">
+          <Logo size="sm" />
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">

@@ -1,0 +1,14 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="32" height="32" rx="8" fill="url(#brandGradient)" />
+  <path d="M16 6L4 12L16 18L28 12L16 6Z" fill="#FFFFFF" fill-opacity="0.95" />
+  <path d="M8 15V21C8 23.5 11.5 25.5 16 25.5C20.5 25.5 24 23.5 24 21V15L16 19L8 15Z" fill="#FFFFFF" fill-opacity="0.75" />
+  <circle cx="25" cy="19.5" r="1.75" fill="#FBBF24" />
+  <path d="M25 13.5V19" stroke="#FBBF24" stroke-width="1.75" stroke-linecap="round" />
+  <defs>
+    <linearGradient id="brandGradient" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4F46E5" />
+      <stop offset="0.5" stop-color="#7C3AED" />
+      <stop offset="1" stop-color="#9333EA" />
+    </linearGradient>
+  </defs>
+</svg>

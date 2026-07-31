@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
 import { ChevronsLeft, GraduationCap } from "lucide-react";
 import { NAV_ITEMS, APP_NAME } from "@/lib/constants";
+import { Logo } from "@/components/shared/logo";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -22,15 +23,8 @@ export function Sidebar({ collapsed, onToggle, onNavigate }: SidebarProps) {
     <div className="flex h-full flex-col border-r border-border/70 bg-card/60 backdrop-blur-xl">
       {/* Brand Header */}
       <div className={cn("flex h-16 items-center gap-3 px-5 border-b border-border/50", collapsed && "justify-center px-0")}>
-        <Link href="/dashboard" className="flex items-center gap-3 font-display font-bold tracking-tight" onClick={onNavigate}>
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 via-violet-600 to-purple-600 text-white shadow-md shadow-indigo-500/20">
-            <GraduationCap className="h-5 w-5" />
-          </span>
-          {!collapsed && (
-            <span className="font-display font-extrabold text-foreground tracking-tight text-lg bg-gradient-to-r from-foreground via-foreground/90 to-foreground/70 bg-clip-text">
-              {APP_NAME}
-            </span>
-          )}
+        <Link href="/dashboard" onClick={onNavigate}>
+          <Logo iconOnly={collapsed} size="sm" />
         </Link>
       </div>
 
