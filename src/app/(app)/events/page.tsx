@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import { PageHeader } from "@/components/shared/page-header";
+import { EventsHero } from "@/components/events/events-hero";
 import { EventList } from "@/components/events/event-list";
 
-export const metadata: Metadata = { title: "Events" };
+export const metadata: Metadata = { title: "Events — CampusTracker" };
 
 export default function EventsPage() {
   return (
     <div className="space-y-6">
-      <PageHeader title="Events" description="College events, workshops, hackathons, club activities, and personal reminders." />
+      <EventsHero />
       <EventList />
     </div>
   );

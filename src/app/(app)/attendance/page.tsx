@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import { PageHeader } from "@/components/shared/page-header";
+import { AttendanceHero } from "@/components/attendance/attendance-hero";
 import { AttendancePageContent } from "@/components/attendance/attendance-page-content";
 
-export const metadata: Metadata = { title: "Attendance" };
+export const metadata: Metadata = { title: "Attendance — CampusTracker" };
 
 export default function AttendancePage() {
   return (
     <div className="space-y-6">
-      <PageHeader title="Attendance" description="Mark today's classes in one click. Everything else updates automatically." />
+      <AttendanceHero />
       <AttendancePageContent />
     </div>
   );

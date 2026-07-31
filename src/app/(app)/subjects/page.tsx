@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import { PageHeader } from "@/components/shared/page-header";
+import { SubjectsHero } from "@/components/subjects/subjects-hero";
 import { SubjectsView } from "@/components/subjects/subjects-view";
 
-export const metadata: Metadata = { title: "Subjects" };
+export const metadata: Metadata = { title: "Subjects — CampusTracker" };
 
 export default function SubjectsPage() {
   return (
     <div className="space-y-6">
-      <PageHeader title="Subjects" description="The building blocks for your timetable, attendance, and assignments." />
+      <SubjectsHero />
       <SubjectsView />
     </div>
   );
