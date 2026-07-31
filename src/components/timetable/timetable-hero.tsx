@@ -39,6 +39,14 @@ export function TimetableHero() {
           <p className="max-w-xl text-sm text-indigo-100/90 leading-relaxed">
             Build your weekly schedule once — drag lectures to adjust timing, or let AI automatically extract your syllabus schedule.
           </p>
+
+          <div className="pt-2">
+            <Button size="sm" className="bg-white text-indigo-700 hover:bg-white/90 shadow-md font-semibold text-xs" asChild>
+              <Link href="/timetable/import">
+                <Sparkles className="mr-1.5 h-3.5 w-3.5 text-indigo-600" /> Import Schedule with AI
+              </Link>
+            </Button>
+          </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-3 shrink-0">

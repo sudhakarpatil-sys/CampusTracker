@@ -1,7 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { GraduationCap, Clock, Award } from "lucide-react";
+import { GraduationCap, Clock, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ExamImportDialog } from "@/components/exams/exam-import-dialog";
 import { useExams } from "@/hooks/use-exams";
 
 export function ExamsHero() {
@@ -31,6 +33,16 @@ export function ExamsHero() {
           <p className="max-w-xl text-sm text-rose-100/90 leading-relaxed">
             Track midterm dates, final exams, quiz schedules, and syllabus revision status.
           </p>
+
+          <div className="pt-2">
+            <ExamImportDialog
+              trigger={
+                <Button size="sm" className="bg-white text-rose-700 hover:bg-white/90 shadow-md font-semibold text-xs">
+                  <Sparkles className="mr-1.5 h-3.5 w-3.5 text-rose-600" /> Import Exam Schedule with AI
+                </Button>
+              }
+            />
+          </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-3 shrink-0">

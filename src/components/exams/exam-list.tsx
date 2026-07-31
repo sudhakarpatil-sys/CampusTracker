@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { ExamFormDialog } from "@/components/exams/exam-form-dialog";
+import { ExamImportDialog } from "@/components/exams/exam-import-dialog";
 import { useExams } from "@/hooks/use-exams";
 import { useSubjects } from "@/hooks/use-subjects";
 import { PREP_STATUSES } from "@/lib/constants";
@@ -32,20 +33,39 @@ export function ExamList() {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
+      <div className="flex items-center justify-end gap-2">
+        <ExamImportDialog />
         <ExamFormDialog
           subjects={subjects}
           onSubmit={createExam}
           trigger={
-            <Button size="sm">
-              <Plus className="h-4 w-4" /> Add exam
+            <Button size="sm" variant="outline">
+              <Plus className="h-4 w-4" /> Add exam manually
             </Button>
           }
         />
       </div>
 
       {exams.length === 0 ? (
-        <EmptyState icon={GraduationCap} title="No exams tracked" description="Add an exam to see a countdown and prep checklist here." />
+        <EmptyState
+          icon={GraduationCap}
+          title="No exams tracked yet"
+          description="Import your exam schedule date sheet with AI, or add exams manually to track countdowns and prep checklists."
+          action={
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-3">
+              <ExamImportDialog />
+              <ExamFormDialog
+                subjects={subjects}
+                onSubmit={createExam}
+                trigger={
+                  <Button size="sm" variant="outline">
+                    <Plus className="h-4 w-4" /> Add exam manually
+                  </Button>
+                }
+              />
+            </div>
+          }
+        />
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {exams.map((exam) => {

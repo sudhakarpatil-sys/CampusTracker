@@ -6,6 +6,7 @@ import { Plus, CalendarClock, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
+import { SubjectFormDialog } from "@/components/subjects/subject-form-dialog";
 import { LectureFormDialog } from "@/components/timetable/lecture-form-dialog";
 import { LectureBlock } from "@/components/timetable/lecture-block";
 import { WeekendToggle } from "@/components/timetable/weekend-toggle";
@@ -22,7 +23,7 @@ const GRID_END_MIN = TIMETABLE_HOURS.end * 60;
 const GRID_HEIGHT = (GRID_END_MIN - GRID_START_MIN) * PX_PER_MIN;
 
 export function TimetableGrid() {
-  const { subjects, isLoading: subjectsLoading } = useSubjects();
+  const { subjects, createSubject, isLoading: subjectsLoading } = useSubjects();
   const { slots, isLoading, createSlot, updateSlot, duplicateSlot, deleteSlot, slotsForDay } = useTimetable();
   const { settings } = useTimetableSettings();
   const dragSlotId = React.useRef<string | null>(null);
@@ -58,11 +59,37 @@ export function TimetableGrid() {
 
   if (subjects.length === 0) {
     return (
-      <EmptyState
-        icon={CalendarClock}
-        title="Add a subject first"
-        description="Your timetable is built from subjects — add one, then come back to schedule lectures."
-      />
+      <div className="space-y-4">
+        <div className="flex items-center justify-end gap-2">
+          <Button variant="default" size="sm" className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-sm" asChild>
+            <Link href="/timetable/import">
+              <Sparkles className="mr-1.5 h-3.5 w-3.5 text-amber-300" /> Import with AI
+            </Link>
+          </Button>
+        </div>
+        <EmptyState
+          icon={CalendarClock}
+          title="No subjects added yet"
+          description="Import your syllabus schedule with AI to automatically extract subjects & lectures, or add a subject manually."
+          action={
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-3">
+              <Button size="sm" className="bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 text-white shadow-md hover:opacity-90" asChild>
+                <Link href="/timetable/import">
+                  <Sparkles className="mr-1.5 h-4 w-4 text-amber-300" /> Import Schedule with AI
+                </Link>
+              </Button>
+              <SubjectFormDialog
+                onSubmit={createSubject}
+                trigger={
+                  <Button variant="outline" size="sm">
+                    <Plus className="mr-1.5 h-4 w-4" /> Add Subject Manually
+                  </Button>
+                }
+              />
+            </div>
+          }
+        />
+      </div>
     );
   }
 
