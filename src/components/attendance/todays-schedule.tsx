@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Loader2, PartyPopper } from "lucide-react";
+import { Loader2, PartyPopper, MapPin, UserCheck, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTimetable } from "@/hooks/use-timetable";
@@ -20,19 +20,11 @@ interface TodaysScheduleProps {
   fallback?: React.ReactNode;
 }
 
-/** The "Smart Daily Schedule" — today's lectures pulled straight from the
- * timetable, with one-click attendance. Reused on both the dashboard and
- * the Attendance page per the spec. */
 export function TodaysSchedule({ fallback }: TodaysScheduleProps) {
   const { slotsForDay, isLoading: timetableLoading } = useTimetable();
   const { subjectsById, isLoading: subjectsLoading } = useSubjects();
   const { statusFor, markAttendance } = useAttendance();
 
-  // Tracks which (slot, status) button is currently saving, so a click
-  // gives instant feedback (spinner + disabled row) and can't be fired
-  // twice before the first request resolves — the status itself already
-  // flips instantly via optimistic local state in useAttendance, this is
-  // just the "in flight" affordance on top of that.
   const [pending, setPending] = React.useState<{ slotId: string; status: AttendanceStatus } | null>(null);
 
   const today = todayISODay();
@@ -41,8 +33,8 @@ export function TodaysSchedule({ fallback }: TodaysScheduleProps) {
   if (timetableLoading || subjectsLoading) {
     return (
       <div className="space-y-3">
-        <Skeleton className="h-20 w-full" />
-        <Skeleton className="h-20 w-full" />
+        <Skeleton className="h-20 w-full rounded-xl" />
+        <Skeleton className="h-20 w-full rounded-xl" />
       </div>
     );
   }
@@ -50,9 +42,12 @@ export function TodaysSchedule({ fallback }: TodaysScheduleProps) {
   if (todaysSlots.length === 0) {
     return (
       <div className="space-y-4">
-        <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border py-10 text-center">
-          <PartyPopper className="h-6 w-6 text-accent" />
-          <p className="text-sm font-medium">No classes scheduled today 🎉</p>
+        <div className="flex flex-col items-center justify-center gap-2.5 rounded-xl border border-dashed border-border/80 bg-muted/20 py-8 text-center">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400">
+            <PartyPopper className="h-5 w-5" />
+          </div>
+          <p className="text-xs font-semibold text-foreground">No classes scheduled today 🎉</p>
+          <p className="text-[11px] text-muted-foreground">Enjoy your free day or prepare ahead!</p>
         </div>
         {fallback}
       </div>
@@ -60,7 +55,7 @@ export function TodaysSchedule({ fallback }: TodaysScheduleProps) {
   }
 
   async function handleMark(subjectId: string, slotId: string, status: AttendanceStatus) {
-    if (pending) return; // one save at a time is plenty for a single-user click
+    if (pending) return;
     setPending({ slotId, status });
     await markAttendance({ subjectId, timetableSlotId: slotId, status });
     setPending(null);
@@ -72,36 +67,58 @@ export function TodaysSchedule({ fallback }: TodaysScheduleProps) {
         const subject = subjectsById.get(slot.subject_id);
         const currentStatus = statusFor(slot.id);
         const isRowPending = pending?.slotId === slot.id;
+        const subjectColor = subject?.color || "#6366F1";
+
         return (
-          <div key={slot.id} className="margin-tab flex flex-col gap-3 rounded-lg border border-border p-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="min-w-0">
-              <p className="font-mono text-xs text-muted-foreground">
-                {formatTime(slot.start_time)} – {formatTime(slot.end_time)}
-              </p>
-              <p className="truncate font-medium" style={{ color: subject?.color }}>
+          <div
+            key={slot.id}
+            className="group relative flex flex-col gap-3 rounded-xl border border-border/60 bg-muted/20 p-3.5 transition-all hover:border-indigo-500/30 hover:bg-muted/40 sm:flex-row sm:items-center sm:justify-between"
+            style={{ borderLeftWidth: "4px", borderLeftColor: subjectColor }}
+          >
+            <div className="min-w-0 space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="flex items-center gap-1 font-mono text-[11px] font-medium text-muted-foreground">
+                  <Clock className="h-3 w-3" />
+                  {formatTime(slot.start_time)} – {formatTime(slot.end_time)}
+                </span>
+              </div>
+              <p className="truncate text-sm font-semibold text-foreground">
                 {subject?.name ?? "Unknown subject"}
               </p>
-              <p className="truncate text-xs text-muted-foreground">
-                {[slot.classroom, slot.faculty_name].filter(Boolean).join(" · ")}
-              </p>
+              <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                {slot.classroom && (
+                  <span className="flex items-center gap-1">
+                    <MapPin className="h-3 w-3" /> {slot.classroom}
+                  </span>
+                )}
+                {slot.faculty_name && (
+                  <span className="flex items-center gap-1">
+                    <UserCheck className="h-3 w-3" /> {slot.faculty_name}
+                  </span>
+                )}
+              </div>
             </div>
+
             <div className="flex gap-1.5">
               {STATUS_OPTIONS.map((opt) => {
                 const isThisButtonPending = isRowPending && pending?.status === opt.value;
+                const isSelected = currentStatus === opt.value;
+
                 return (
                   <Button
                     key={opt.value}
                     size="sm"
-                    variant={currentStatus === opt.value ? "default" : "outline"}
+                    variant={isSelected ? "default" : "outline"}
                     className={cn(
-                      "text-xs",
-                      currentStatus === opt.value && opt.value === "present" && "bg-success text-white hover:bg-success/90",
-                      currentStatus === opt.value && opt.value === "absent" && "bg-destructive hover:bg-destructive/90"
+                      "h-8 text-xs font-medium transition-all duration-200",
+                      isSelected && opt.value === "present" && "bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm",
+                      isSelected && opt.value === "absent" && "bg-rose-600 text-white hover:bg-rose-700 shadow-sm",
+                      isSelected && opt.value === "cancelled" && "bg-slate-600 text-white hover:bg-slate-700 shadow-sm"
                     )}
                     disabled={isRowPending}
                     onClick={() => handleMark(slot.subject_id, slot.id, opt.value)}
                   >
-                    {isThisButtonPending && <Loader2 className="h-3 w-3 animate-spin" />}
+                    {isThisButtonPending && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
                     {opt.label}
                   </Button>
                 );

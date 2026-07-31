@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
-import { DashboardGrid } from "@/components/dashboard/dashboard-grid";
-import { QuickActions } from "@/components/dashboard/quick-actions";
 import { createClient } from "@/lib/supabase/server";
+import { DashboardHero } from "@/components/dashboard/dashboard-hero";
+import { DashboardMetrics } from "@/components/dashboard/dashboard-metrics";
+import { QuickActions } from "@/components/dashboard/quick-actions";
+import { DashboardGrid } from "@/components/dashboard/dashboard-grid";
 
-export const metadata: Metadata = { title: "Dashboard" };
+export const metadata: Metadata = { title: "Dashboard — CampusTracker" };
 
 export default async function DashboardPage() {
   const supabase = createClient();
@@ -17,30 +19,18 @@ export default async function DashboardPage() {
 
   const firstName = profile?.full_name?.split(" ")[0];
 
-  const todayStr = new Date().toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "short",
-    day: "numeric",
-  });
-
   return (
     <div className="space-y-6">
-      {/* V3 Editorial Greeting Header */}
-      <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between border-b border-border/40 pb-4">
-        <div>
-          <h1 className="font-serif text-2xl font-normal tracking-tight text-foreground sm:text-3xl">
-            {firstName ? `Good to see you, ${firstName}` : "Dashboard"}
-          </h1>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Your campus at a glance. Drag widgets to reorder.
-          </p>
-        </div>
-        <span className="shrink-0 rounded-full border border-border/60 bg-muted/30 px-3 py-1 font-mono text-xs text-muted-foreground">
-          {todayStr}
-        </span>
-      </div>
+      {/* V4 Premium Hero Banner */}
+      <DashboardHero firstName={firstName} />
 
+      {/* Interactive Metric Strip */}
+      <DashboardMetrics />
+
+      {/* Quick Action Bar */}
       <QuickActions />
+
+      {/* Interactive Widget Grid */}
       <DashboardGrid />
     </div>
   );
