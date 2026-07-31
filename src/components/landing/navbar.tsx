@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Menu, NotebookPen, X } from "lucide-react";
+import { Menu, GraduationCap, X, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { APP_NAME } from "@/lib/constants";
@@ -27,30 +27,43 @@ export function Navbar() {
   }, []);
 
   return (
-    <header className={cn("sticky top-0 z-40 transition-colors", scrolled ? "glass" : "border-b border-transparent")}>
+    <header
+      className={cn(
+        "sticky top-0 z-50 transition-all duration-300",
+        scrolled
+          ? "border-b border-border/60 bg-background/80 backdrop-blur-xl shadow-lg shadow-black/5"
+          : "border-b border-transparent bg-transparent"
+      )}
+    >
       <div className="container flex h-16 items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 font-display text-lg font-semibold">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-accent-foreground">
-            <NotebookPen className="h-4 w-4" />
+        <Link href="/" className="flex items-center gap-2.5 font-display text-lg font-bold tracking-tight">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 via-violet-600 to-purple-600 text-white shadow-md shadow-indigo-500/20">
+            <GraduationCap className="h-5 w-5" />
           </span>
-          {APP_NAME}
+          <span className="font-extrabold text-foreground">{APP_NAME}</span>
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">
           {LINKS.map((link) => (
-            <a key={link.href} href={link.href} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+            <a
+              key={link.href}
+              href={link.href}
+              className="text-xs font-semibold text-muted-foreground transition-colors duration-200 hover:text-foreground"
+            >
               {link.label}
             </a>
           ))}
         </nav>
 
-        <div className="hidden items-center gap-2 md:flex">
+        <div className="hidden items-center gap-3 md:flex">
           <ThemeToggle />
-          <Button variant="ghost" asChild>
-            <Link href="/login">Log in</Link>
+          <Button variant="ghost" size="sm" className="text-xs font-medium" asChild>
+            <Link href="/login">Sign In</Link>
           </Button>
-          <Button asChild>
-            <Link href="/signup">Get started</Link>
+          <Button size="sm" className="bg-gradient-to-r from-indigo-600 to-violet-600 text-xs font-semibold text-white shadow-md shadow-indigo-500/20 hover:from-indigo-500 hover:to-violet-500" asChild>
+            <Link href="/signup">
+              Get Started Free <Sparkles className="ml-1.5 h-3.5 w-3.5" />
+            </Link>
           </Button>
         </div>
 
@@ -60,19 +73,19 @@ export function Navbar() {
       </div>
 
       {open && (
-        <div className="glass border-t border-border/60 px-6 py-4 md:hidden">
+        <div className="border-t border-border/60 bg-background/95 backdrop-blur-2xl px-6 py-4 md:hidden">
           <nav className="flex flex-col gap-4">
             {LINKS.map((link) => (
-              <a key={link.href} href={link.href} onClick={() => setOpen(false)} className="text-sm text-muted-foreground">
+              <a key={link.href} href={link.href} onClick={() => setOpen(false)} className="text-sm font-medium text-muted-foreground">
                 {link.label}
               </a>
             ))}
-            <div className="mt-2 flex items-center gap-2">
-              <Button variant="outline" className="flex-1" asChild>
-                <Link href="/login">Log in</Link>
+            <div className="mt-2 flex items-center gap-2 pt-2 border-t border-border/50">
+              <Button variant="outline" className="flex-1 text-xs" asChild>
+                <Link href="/login">Sign In</Link>
               </Button>
-              <Button className="flex-1" asChild>
-                <Link href="/signup">Get started</Link>
+              <Button className="flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 text-xs font-semibold text-white" asChild>
+                <Link href="/signup">Get Started</Link>
               </Button>
             </div>
           </nav>

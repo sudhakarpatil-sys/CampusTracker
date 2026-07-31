@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { NotebookPen } from "lucide-react";
+import { GraduationCap } from "lucide-react";
 import { APP_NAME } from "@/lib/constants";
 
 const COLUMNS = [
@@ -14,34 +14,36 @@ const COLUMNS = [
   {
     title: "Account",
     links: [
-      { label: "Log in", href: "/login" },
-      { label: "Sign up", href: "/signup" },
+      { label: "Sign In", href: "/login" },
+      { label: "Create Account", href: "/signup" },
     ],
   },
 ];
 
 export function Footer() {
   return (
-    <footer className="border-t border-border/60 py-12">
+    <footer className="border-t border-border/60 bg-card/60 py-12">
       <div className="container flex flex-col gap-10 sm:flex-row sm:justify-between">
         <div className="max-w-xs">
-          <Link href="/" className="flex items-center gap-2 font-display text-lg font-semibold">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-accent-foreground">
-              <NotebookPen className="h-4 w-4" />
+          <Link href="/" className="flex items-center gap-2.5 font-display text-lg font-bold">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 via-violet-600 to-purple-600 text-white shadow-md shadow-indigo-500/20">
+              <GraduationCap className="h-5 w-5" />
             </span>
-            {APP_NAME}
+            <span className="font-extrabold text-foreground">{APP_NAME}</span>
           </Link>
-          <p className="mt-3 text-sm text-muted-foreground">Your academic life, kept in the margins of one calm app.</p>
+          <p className="mt-3 text-xs text-muted-foreground leading-relaxed">
+            Your entire academic life, effortlessly organized in one calm workspace.
+          </p>
         </div>
 
         <div className="flex gap-16">
           {COLUMNS.map((col) => (
             <div key={col.title}>
-              <p className="text-sm font-medium">{col.title}</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-foreground">{col.title}</p>
               <ul className="mt-3 space-y-2">
                 {col.links.map((link) => (
                   <li key={link.label}>
-                    <a href={link.href} className="text-sm text-muted-foreground hover:text-foreground">
+                    <a href={link.href} className="text-xs text-muted-foreground transition-colors hover:text-foreground">
                       {link.label}
                     </a>
                   </li>
@@ -51,8 +53,10 @@ export function Footer() {
           ))}
         </div>
       </div>
-      <div className="container mt-10 border-t border-border/60 pt-6 text-xs text-muted-foreground">
-        © {new Date().getFullYear()} {APP_NAME}. Built for students, by students.
+
+      <div className="container mt-10 border-t border-border/50 pt-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
+        <span>© {new Date().getFullYear()} {APP_NAME}. All rights reserved.</span>
+        <span>Built for students, by students.</span>
       </div>
     </footer>
   );
