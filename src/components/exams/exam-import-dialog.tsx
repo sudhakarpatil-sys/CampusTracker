@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { Sparkles, Upload, Loader2, Calendar, MapPin, Check, Plus, AlertCircle } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -134,12 +135,17 @@ export function ExamImportDialog({ trigger }: { trigger?: React.ReactNode }) {
 
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 font-display text-lg font-bold">
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
-              <Sparkles className="h-4 w-4" />
-            </span>
-            AI Exam Schedule Import
-          </DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="flex items-center gap-2 font-display text-lg font-bold">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                <Sparkles className="h-4 w-4" />
+              </span>
+              AI Exam Schedule Import
+            </DialogTitle>
+            <Button variant="ghost" size="sm" className="text-xs text-indigo-600 dark:text-indigo-400" asChild onClick={() => setOpen(false)}>
+              <Link href="/exams/import">Open Full Wizard ↗</Link>
+            </Button>
+          </div>
         </DialogHeader>
 
         {step === "upload" && (
