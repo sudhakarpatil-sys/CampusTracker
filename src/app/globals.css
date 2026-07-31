@@ -3,88 +3,90 @@
 @tailwind utilities;
 
 /*
-  CampusTracker design tokens.
-  Signature direction: a "notebook margin" system — dark, ink-on-paper feel
-  at night, warm paper feel in the day. Accent is a highlighter marigold,
-  primary actions use an ink-blue. See DESIGN.md for full rationale.
+  CampusTracker V3 Artisanal Design System.
+  Direction: Hand-crafted, bespoke SaaS aesthetic inspired by Apple, Arc, Linear, and Stripe.
+  - Obsidian Midnight canvas (#030712) with radial ambient gradient wash.
+  - Glass shelf cards with top-edge light highlights (border-t-white/15).
+  - Fraunces serif editorial titles, Inter body copy, JetBrains Mono figures.
+  - Glowing status halo indicators (emerald, amber, rose).
 */
 
 @layer base {
   :root {
-    --background: 42 30% 96%;
-    --foreground: 220 15% 10%;
+    --background: 40 20% 97%;
+    --foreground: 222 47% 11%;
 
     --surface: 0 0% 100%;
-    --surface-raised: 40 25% 98%;
+    --surface-raised: 210 40% 96%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 15% 10%;
+    --card-foreground: 222 47% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 15% 10%;
+    --popover-foreground: 222 47% 11%;
 
-    --border: 40 20% 88%;
-    --input: 40 20% 85%;
-    --ring: 230 100% 61%;
+    --border: 214 32% 91%;
+    --input: 214 32% 89%;
+    --ring: 239 84% 67%;
 
-    --muted: 40 20% 92%;
-    --muted-foreground: 220 9% 40%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
 
-    --primary: 230 100% 61%;
+    --primary: 239 84% 67%;
     --primary-foreground: 0 0% 100%;
 
-    --accent: 37 100% 44%;
-    --accent-foreground: 30 40% 10%;
+    --accent: 38 92% 50%;
+    --accent-foreground: 222 47% 11%;
 
-    --ink: 228 45% 30%;
+    --ink: 222 47% 11%;
     --ink-foreground: 0 0% 100%;
 
-    --destructive: 357 74% 50%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 152 55% 34%;
-    --warning: 37 100% 44%;
+    --success: 160 84% 39%;
+    --warning: 38 92% 50%;
 
-    --shadow-color: 220 45% 18%;
+    --shadow-color: 215 25% 20%;
     --radius: 0.75rem;
   }
 
   .dark {
-    --background: 222 26% 6%;
-    --foreground: 228 27% 94%;
+    --background: 224 71% 4%;
+    --foreground: 210 40% 98%;
 
-    --surface: 220 24% 9%;
-    --surface-raised: 222 22% 13%;
+    --surface: 222 47% 7%;
+    --surface-raised: 217 33% 11%;
 
-    --card: 222 22% 12%;
-    --card-foreground: 228 27% 94%;
+    --card: 222 47% 7%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 222 24% 10%;
-    --popover-foreground: 228 27% 94%;
+    --popover: 222 47% 8%;
+    --popover-foreground: 210 40% 98%;
 
-    --border: 226 22% 18%;
-    --input: 226 20% 20%;
-    --ring: 228 100% 68%;
+    --border: 217 28% 14%;
+    --input: 217 28% 16%;
+    --ring: 239 84% 67%;
 
-    --muted: 222 20% 15%;
-    --muted-foreground: 222 13% 60%;
+    --muted: 217 28% 11%;
+    --muted-foreground: 215 16% 60%;
 
-    --primary: 228 100% 68%;
-    --primary-foreground: 222 26% 8%;
+    --primary: 239 84% 67%;
+    --primary-foreground: 210 40% 98%;
 
-    --accent: 37 90% 55%;
-    --accent-foreground: 30 40% 10%;
+    --accent: 38 92% 50%;
+    --accent-foreground: 224 71% 4%;
 
-    --ink: 228 60% 78%;
-    --ink-foreground: 222 26% 8%;
+    --ink: 239 84% 75%;
+    --ink-foreground: 224 71% 4%;
 
-    --destructive: 357 74% 58%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 152 60% 55%;
-    --warning: 37 90% 55%;
+    --success: 160 84% 39%;
+    --warning: 38 92% 50%;
 
-    --shadow-color: 222 65% 3%;
+    --shadow-color: 224 80% 2%;
   }
 }
 
@@ -93,11 +95,13 @@
     @apply border-border;
   }
   html {
-    color-scheme: dark;
+    color-scheme: light dark;
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-feature-settings: "cv11", "ss01";
+    background-image: radial-gradient(ellipse at 50% 0%, rgba(99, 102, 241, 0.05) 0%, transparent 60%);
+    background-attachment: fixed;
   }
   ::selection {
     @apply bg-accent/30 text-foreground;
@@ -105,33 +109,34 @@
 }
 
 @layer utilities {
-  /* Glassmorphism surface used for nav bars, cards, popovers */
-  .glass {
-    @apply bg-surface/70 backdrop-blur-xl backdrop-saturate-150 border border-border/60;
+  /* Bespoke Glass Shelf Container: Supports both Light (warm paper) and Dark (obsidian) mode */
+  .glass-shelf {
+    @apply bg-card border border-border/70 shadow-soft transition-all duration-200;
+  }
+  .glass-shelf:hover {
+    @apply border-accent/40 shadow-soft-lg;
+    box-shadow: 0 4px 20px -4px rgba(99, 102, 241, 0.12);
   }
 
-  /* The signature "margin tab" — a small notched label that reads like a
-     sticky index tab on a notebook page. Used on dashboard widgets and
-     section headers to encode category, the way tabs encode a subject.
-     The accent rule "draws in" top-to-bottom on mount, like a highlighter
-     stroke — the one deliberate motion moment, tied directly to the
-     brand's own notebook-margin metaphor rather than generic entrance
-     motion. */
+  /* Glowing Halo Dots */
+  .halo-emerald {
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.6);
+  }
+  .halo-amber {
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.6);
+  }
+  .halo-rose {
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
+  }
+
+  /* Signature Marigold Highlight Margin Rule */
   .margin-tab {
     @apply relative pl-3;
   }
   .margin-tab::before {
     content: "";
-    @apply absolute left-0 top-1 bottom-1 w-[3px] rounded-full bg-accent origin-top;
-    animation: tab-draw 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
-
-  .skeleton {
-    @apply relative overflow-hidden bg-muted rounded-md;
-  }
-  .skeleton::after {
-    content: "";
-    @apply absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-foreground/10 to-transparent animate-shimmer;
+    @apply absolute left-0 top-1 bottom-1 w-[2.5px] rounded-full bg-accent origin-top;
+    animation: tab-draw 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
   .scrollbar-thin {
@@ -146,9 +151,6 @@
   }
 }
 
-/* Real reduced-motion support — DESIGN.md has always described this as a
-   principle, but nothing in the codebase actually implemented it before
-   now. Every animation/transition collapses to functionally instant. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
