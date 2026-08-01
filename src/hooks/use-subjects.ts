@@ -5,6 +5,7 @@ import { useSupabaseCollection } from "@/hooks/use-supabase-collection";
 import type { Subject } from "@/types/database.types";
 import type { SubjectInput } from "@/lib/validations/academic";
 import { toast } from "@/hooks/use-toast";
+import { logAuditEvent, AuditAction } from "@/lib/audit-log";
 
 export function useSubjects(options?: { includeArchived?: boolean }) {
   const { data, isLoading, refetch, supabase, userId } = useSupabaseCollection<Subject>({
@@ -32,6 +33,7 @@ export function useSubjects(options?: { includeArchived?: boolean }) {
       return { error: error.message };
     }
     toast({ title: "Subject added" });
+    logAuditEvent(supabase, userId, { action: AuditAction.SUBJECT_CREATE, entityType: "subjects", metadata: { name: input.name } });
     refetch();
     return { error: null };
   }
@@ -54,6 +56,7 @@ export function useSubjects(options?: { includeArchived?: boolean }) {
       return { error: error.message };
     }
     toast({ title: "Subject updated" });
+    logAuditEvent(supabase, userId!, { action: AuditAction.SUBJECT_UPDATE, entityType: "subjects", entityId: id, metadata: { name: input.name } });
     refetch();
     return { error: null };
   }
@@ -61,6 +64,7 @@ export function useSubjects(options?: { includeArchived?: boolean }) {
   async function archiveSubject(id: string) {
     await supabase.from("subjects").update({ is_archived: true }).eq("id", id);
     toast({ title: "Subject archived" });
+    logAuditEvent(supabase, userId!, { action: AuditAction.SUBJECT_DELETE, entityType: "subjects", entityId: id, metadata: { archived: true } });
     refetch();
   }
 
@@ -77,6 +81,7 @@ export function useSubjects(options?: { includeArchived?: boolean }) {
       return;
     }
     toast({ title: "Subject deleted" });
+    logAuditEvent(supabase, userId!, { action: AuditAction.SUBJECT_DELETE, entityType: "subjects", entityId: id });
     refetch();
   }
 

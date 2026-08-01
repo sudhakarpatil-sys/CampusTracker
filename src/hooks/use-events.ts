@@ -4,6 +4,7 @@ import { useSupabaseCollection } from "@/hooks/use-supabase-collection";
 import type { CalendarEvent } from "@/types/database.types";
 import type { EventInput } from "@/lib/validations/academic";
 import { toast } from "@/hooks/use-toast";
+import { logAuditEvent, AuditAction } from "@/lib/audit-log";
 
 export function useEvents() {
   const { data, isLoading, refetch, supabase, userId } = useSupabaseCollection<CalendarEvent>({
@@ -31,6 +32,7 @@ export function useEvents() {
       return { error: error.message };
     }
     toast({ title: "Event added" });
+    logAuditEvent(supabase, userId, { action: AuditAction.EVENT_CREATE, entityType: "events", metadata: { title: input.title } });
     refetch();
     return { error: null };
   }
@@ -38,6 +40,7 @@ export function useEvents() {
   async function updateEvent(id: string, input: Partial<EventInput>) {
     const { error } = await supabase.from("events").update(toPatch(input) as never).eq("id", id);
     if (error) toast({ title: "Couldn't update event", description: error.message });
+    else logAuditEvent(supabase, userId!, { action: AuditAction.EVENT_UPDATE, entityType: "events", entityId: id });
     refetch();
   }
 
@@ -48,6 +51,7 @@ export function useEvents() {
       return;
     }
     toast({ title: "Event deleted" });
+    logAuditEvent(supabase, userId!, { action: AuditAction.EVENT_DELETE, entityType: "events", entityId: id });
     refetch();
   }
 

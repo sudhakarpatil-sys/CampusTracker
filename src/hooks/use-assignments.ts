@@ -4,6 +4,7 @@ import { useSupabaseCollection } from "@/hooks/use-supabase-collection";
 import type { Assignment } from "@/types/database.types";
 import type { AssignmentInput } from "@/lib/validations/academic";
 import { toast } from "@/hooks/use-toast";
+import { logAuditEvent, AuditAction } from "@/lib/audit-log";
 
 export function useAssignments(options?: { includeArchived?: boolean }) {
   const { data, isLoading, refetch, supabase, userId } = useSupabaseCollection<Assignment>({
@@ -34,6 +35,7 @@ export function useAssignments(options?: { includeArchived?: boolean }) {
       return { error: error.message };
     }
     toast({ title: "Assignment created" });
+    logAuditEvent(supabase, userId, { action: AuditAction.ASSIGNMENT_CREATE, entityType: "assignments", metadata: { title: input.title } });
     refetch();
     return { error: null };
   }
@@ -44,6 +46,7 @@ export function useAssignments(options?: { includeArchived?: boolean }) {
       toast({ title: "Couldn't update assignment", description: error.message });
       return { error: error.message };
     }
+    logAuditEvent(supabase, userId!, { action: AuditAction.ASSIGNMENT_UPDATE, entityType: "assignments", entityId: id });
     refetch();
     return { error: null };
   }
@@ -79,6 +82,7 @@ export function useAssignments(options?: { includeArchived?: boolean }) {
   async function archiveAssignment(id: string) {
     await supabase.from("assignments").update({ is_archived: true }).eq("id", id);
     toast({ title: "Assignment archived" });
+    logAuditEvent(supabase, userId!, { action: AuditAction.ASSIGNMENT_ARCHIVE, entityType: "assignments", entityId: id });
     refetch();
   }
 
@@ -95,6 +99,7 @@ export function useAssignments(options?: { includeArchived?: boolean }) {
       return;
     }
     toast({ title: "Assignment deleted" });
+    logAuditEvent(supabase, userId!, { action: AuditAction.ASSIGNMENT_DELETE, entityType: "assignments", entityId: id });
     refetch();
   }
 

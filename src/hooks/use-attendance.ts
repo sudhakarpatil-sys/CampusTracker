@@ -6,6 +6,7 @@ import { useSupabaseCollection } from "@/hooks/use-supabase-collection";
 import type { AttendanceRecord } from "@/types/database.types";
 import { computeAttendanceStats, predictAttendance } from "@/lib/academic";
 import { toast } from "@/hooks/use-toast";
+import { logAuditEvent, AuditAction } from "@/lib/audit-log";
 
 export type AttendanceStatus = "present" | "absent" | "cancelled";
 
@@ -69,6 +70,15 @@ export function useAttendance() {
     }
 
     toast({ title: STATUS_LABEL[params.status], variant: params.status === "present" ? "success" : "default" });
+
+    // Fire-and-forget audit log — never blocks the user action.
+    logAuditEvent(supabase, userId, {
+      action: AuditAction.ATTENDANCE_MARK,
+      entityType: "attendance_records",
+      entityId: params.timetableSlotId,
+      metadata: { status: params.status, subjectId: params.subjectId, classDate },
+    });
+
     refetch();
     return { error: null };
   }

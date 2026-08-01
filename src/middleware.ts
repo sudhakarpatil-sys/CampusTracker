@@ -12,6 +12,60 @@ function isPublicRoute(pathname: string) {
   return PUBLIC_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
 }
 
+// ─────────────────────────────────────────────────────────────────────────
+// Security headers applied to every response.
+// ─────────────────────────────────────────────────────────────────────────
+
+const SECURITY_HEADERS: Record<string, string> = {
+  // Prevent MIME-type sniffing (e.g., treating uploads as HTML).
+  "X-Content-Type-Options": "nosniff",
+  // Block clickjacking by forbidding iframe embedding except same-origin.
+  "X-Frame-Options": "SAMEORIGIN",
+  // Instruct browsers to prefer HTTPS for future requests (1 year).
+  "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+  // Control referrer leakage — send origin only on cross-origin requests.
+  "Referrer-Policy": "strict-origin-when-cross-origin",
+  // Disable browser features not used by CampusTracker.
+  "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=()",
+};
+
+/**
+ * Content Security Policy — allows:
+ *   - self for scripts, styles, images, fonts, connections
+ *   - Supabase project for API + storage
+ *   - Google Fonts for font files
+ *   - inline styles (required by Tailwind's style injection)
+ *   - unsafe-eval in dev only (Next.js HMR)
+ *   - data: for small inline SVGs / base64 images
+ */
+function buildCSP(): string {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+  const isDev = process.env.NODE_ENV === "development";
+
+  const directives = [
+    `default-src 'self'`,
+    `script-src 'self'${isDev ? " 'unsafe-eval'" : ""} 'unsafe-inline'`,
+    `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
+    `img-src 'self' data: blob: ${supabaseUrl} https://*.supabase.co`,
+    `font-src 'self' https://fonts.gstatic.com`,
+    `connect-src 'self' ${supabaseUrl} https://*.supabase.co wss://*.supabase.co${isDev ? " ws://localhost:*" : ""}`,
+    `frame-ancestors 'self'`,
+    `base-uri 'self'`,
+    `form-action 'self'`,
+    `object-src 'none'`,
+  ];
+
+  return directives.join("; ");
+}
+
+function applySecurityHeaders(response: NextResponse): NextResponse {
+  for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
+    response.headers.set(key, value);
+  }
+  response.headers.set("Content-Security-Policy", buildCSP());
+  return response;
+}
+
 export async function middleware(request: NextRequest) {
   const { response, user, onboardingCompleted } = await updateSession(request);
   const { pathname } = request.nextUrl;
@@ -23,7 +77,7 @@ export async function middleware(request: NextRequest) {
   // assumes an HTML navigation) doesn't apply here. Session cookies are
   // still refreshed by the updateSession() call above.
   if (pathname.startsWith("/api/")) {
-    return response;
+    return applySecurityHeaders(response);
   }
 
   // Unauthenticated users trying to reach a protected route are always
@@ -32,7 +86,7 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/";
     url.searchParams.set("auth", "required");
-    return NextResponse.redirect(url);
+    return applySecurityHeaders(NextResponse.redirect(url));
   }
 
   // Authenticated users shouldn't linger on login/signup screens.
@@ -40,7 +94,7 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     url.search = "";
-    return NextResponse.redirect(url);
+    return applySecurityHeaders(NextResponse.redirect(url));
   }
 
   // First-login users are funneled into onboarding before anything else.
@@ -48,7 +102,7 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/onboarding";
     url.search = "";
-    return NextResponse.redirect(url);
+    return applySecurityHeaders(NextResponse.redirect(url));
   }
 
   // Once onboarding is done, don't let the user linger on that screen.
@@ -56,10 +110,10 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     url.search = "";
-    return NextResponse.redirect(url);
+    return applySecurityHeaders(NextResponse.redirect(url));
   }
 
-  return response;
+  return applySecurityHeaders(response);
 }
 
 export const config = {

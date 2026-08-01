@@ -17,11 +17,49 @@ interface UseCollectionOptions {
   realtime?: boolean;
 }
 
+// ─────────────────────────────────────────────────────────────────────────
+// Retry configuration
+// ─────────────────────────────────────────────────────────────────────────
+const MAX_RETRIES = 3;
+const INITIAL_RETRY_DELAY_MS = 500;
+const REQUEST_TIMEOUT_MS = 10_000;
+
+/**
+ * Exponential backoff: 500ms → 1s → 2s.
+ */
+function getRetryDelay(attempt: number): number {
+  return INITIAL_RETRY_DELAY_MS * Math.pow(2, attempt);
+}
+
+/**
+ * Wraps a promise with a timeout. Rejects if the promise doesn't
+ * settle within `ms` milliseconds.
+ */
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error("Request timed out")), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      },
+    );
+  });
+}
+
 /**
  * Shared data-fetching core for every Phase 2 entity: loads the
  * current user's rows, keeps them in sync via a Supabase Realtime
  * channel (so edits from other tabs/devices — or optimistic writes here
  * — always converge), and exposes a manual `refetch` for after mutations.
+ *
+ * Phase 3C improvements:
+ * - Exponential backoff retry (max 3 retries) for transient failures
+ * - 10s timeout to prevent indefinite loading states
  *
  * Table-specific hooks (use-subjects, use-tasks, ...) wrap this with typed
  * CRUD helpers; this file intentionally stays untyped-at-the-edges (casts
@@ -53,25 +91,62 @@ export function useSupabaseCollection<T extends { id: string }>({
       setIsLoading(false);
       return;
     }
-    let query: any = supabase.from(table).select(select);
-    query = query.eq("user_id", user.id);
-    if (match) {
-      for (const [key, value] of Object.entries(match)) {
-        query = query.eq(key, value);
+
+    let lastError: string | null = null;
+
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        let query: any = supabase.from(table).select(select); // eslint-disable-line
+        query = query.eq("user_id", user.id);
+        if (match) {
+          for (const [key, value] of Object.entries(match)) {
+            query = query.eq(key, value);
+          }
+        }
+        if (orderBy) {
+          query = query.order(orderBy.column, { ascending: orderBy.ascending ?? true });
+        }
+
+        const result = await withTimeout<{ data: T[] | null; error: { message: string } | null }>(
+          query,
+          REQUEST_TIMEOUT_MS,
+        );
+        const { data: rows, error: queryError } = result;
+
+        if (queryError) {
+          lastError = queryError.message;
+          // eslint-disable-next-line no-console
+          console.error(`Failed to fetch "${table}" (attempt ${attempt + 1}):`, queryError.message);
+
+          // Don't retry on auth/permission errors — they won't resolve on retry.
+          if (queryError.message?.includes("JWT") || queryError.message?.includes("permission")) {
+            break;
+          }
+
+          if (attempt < MAX_RETRIES) {
+            await new Promise((r) => setTimeout(r, getRetryDelay(attempt)));
+            continue;
+          }
+        } else {
+          setError(null);
+          setData((rows ?? []) as unknown as T[]);
+          setIsLoading(false);
+          return;
+        }
+      } catch (err) {
+        lastError = err instanceof Error ? err.message : "Unknown error";
+        // eslint-disable-next-line no-console
+        console.error(`Failed to fetch "${table}" (attempt ${attempt + 1}):`, lastError);
+
+        if (attempt < MAX_RETRIES) {
+          await new Promise((r) => setTimeout(r, getRetryDelay(attempt)));
+          continue;
+        }
       }
     }
-    if (orderBy) {
-      query = query.order(orderBy.column, { ascending: orderBy.ascending ?? true });
-    }
-    const { data: rows, error: queryError } = await query;
-    if (queryError) {
-      setError(queryError.message);
-      // eslint-disable-next-line no-console
-      console.error(`Failed to fetch "${table}":`, queryError.message);
-    } else {
-      setError(null);
-      setData((rows ?? []) as unknown as T[]);
-    }
+
+    // All retries exhausted.
+    setError(lastError);
     setIsLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, userLoading, supabase, table, select, orderBy?.column, orderBy?.ascending, matchKey]);
@@ -92,7 +167,7 @@ export function useSupabaseCollection<T extends { id: string }>({
         { event: "*", schema: "public", table, filter: `user_id=eq.${user.id}` },
         () => {
           refetch();
-        }
+        },
       )
       .subscribe();
 

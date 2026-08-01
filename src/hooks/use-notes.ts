@@ -3,6 +3,7 @@
 import { useSupabaseCollection } from "@/hooks/use-supabase-collection";
 import type { Note } from "@/types/database.types";
 import { toast } from "@/hooks/use-toast";
+import { logAuditEvent, AuditAction } from "@/lib/audit-log";
 
 export function useNotes() {
   const { data, isLoading, refetch, supabase, userId } = useSupabaseCollection<Note>({
@@ -21,6 +22,7 @@ export function useNotes() {
       toast({ title: "Couldn't create note", description: error.message });
       return { error: error.message, id: null as string | null };
     }
+    logAuditEvent(supabase, userId, { action: AuditAction.NOTE_CREATE, entityType: "notes", entityId: inserted?.id, metadata: { title: input.title } });
     refetch();
     return { error: null, id: inserted?.id ?? null };
   }
@@ -46,6 +48,7 @@ export function useNotes() {
       return;
     }
     toast({ title: "Note deleted" });
+    logAuditEvent(supabase, userId!, { action: AuditAction.NOTE_DELETE, entityType: "notes", entityId: id });
     refetch();
   }
 

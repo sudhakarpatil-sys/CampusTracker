@@ -4,6 +4,7 @@ import { useSupabaseCollection } from "@/hooks/use-supabase-collection";
 import type { Exam } from "@/types/database.types";
 import type { ExamInput } from "@/lib/validations/academic";
 import { toast } from "@/hooks/use-toast";
+import { logAuditEvent, AuditAction } from "@/lib/audit-log";
 
 export function useExams() {
   const { data, isLoading, refetch, supabase, userId } = useSupabaseCollection<Exam>({
@@ -30,6 +31,7 @@ export function useExams() {
       return { error: error.message };
     }
     toast({ title: "Exam added" });
+    logAuditEvent(supabase, userId, { action: AuditAction.EXAM_CREATE, entityType: "exams", metadata: { subjectId: input.subjectId } });
     refetch();
     return { error: null };
   }
@@ -37,6 +39,7 @@ export function useExams() {
   async function updateExam(id: string, input: Partial<ExamInput>) {
     const { error } = await supabase.from("exams").update(toPatch(input) as never).eq("id", id);
     if (error) toast({ title: "Couldn't update exam", description: error.message });
+    else logAuditEvent(supabase, userId!, { action: AuditAction.EXAM_UPDATE, entityType: "exams", entityId: id });
     refetch();
   }
 
@@ -47,6 +50,7 @@ export function useExams() {
       return;
     }
     toast({ title: "Exam deleted" });
+    logAuditEvent(supabase, userId!, { action: AuditAction.EXAM_DELETE, entityType: "exams", entityId: id });
     refetch();
   }
 

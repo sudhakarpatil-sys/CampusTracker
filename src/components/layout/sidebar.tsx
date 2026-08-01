@@ -29,7 +29,7 @@ export function Sidebar({ collapsed, onToggle, onNavigate }: SidebarProps) {
       </div>
 
       {/* Nav Menu Items */}
-      <nav className="scrollbar-thin flex-1 space-y-1 overflow-y-auto p-3">
+      <nav aria-label="Main menu" className="scrollbar-thin flex-1 space-y-1 overflow-y-auto p-3" data-testid="sidebar-nav">
         {NAV_ITEMS.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
           return (
@@ -72,6 +72,8 @@ export function Sidebar({ collapsed, onToggle, onNavigate }: SidebarProps) {
         <button
           onClick={onToggle}
           className="flex w-full items-center justify-center gap-2 rounded-xl border border-border/50 bg-muted/30 px-3 py-2 text-xs font-medium text-muted-foreground hover:bg-muted/60 hover:text-foreground transition-all duration-200"
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          data-testid="sidebar-toggle"
         >
           <ChevronsLeft className={cn("h-4 w-4 transition-transform duration-200", collapsed && "rotate-180")} />
           {!collapsed && <span>Collapse Menu</span>}

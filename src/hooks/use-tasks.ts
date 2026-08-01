@@ -4,6 +4,7 @@ import { useSupabaseCollection } from "@/hooks/use-supabase-collection";
 import type { Task } from "@/types/database.types";
 import type { TaskInput } from "@/lib/validations/academic";
 import { toast } from "@/hooks/use-toast";
+import { logAuditEvent, AuditAction } from "@/lib/audit-log";
 
 export function useTasks() {
   const { data, isLoading, refetch, supabase, userId } = useSupabaseCollection<Task>({
@@ -23,6 +24,7 @@ export function useTasks() {
       toast({ title: "Couldn't create task", description: error.message });
       return { error: error.message };
     }
+    logAuditEvent(supabase, userId, { action: AuditAction.TASK_CREATE, entityType: "tasks", metadata: { title: input.title } });
     refetch();
     return { error: null };
   }
@@ -39,6 +41,7 @@ export function useTasks() {
 
   async function toggleComplete(id: string, isCompleted: boolean) {
     await supabase.from("tasks").update({ is_completed: isCompleted }).eq("id", id);
+    if (isCompleted) logAuditEvent(supabase, userId!, { action: AuditAction.TASK_COMPLETE, entityType: "tasks", entityId: id });
     refetch();
   }
 
@@ -48,6 +51,7 @@ export function useTasks() {
       toast({ title: "Couldn't delete task", description: error.message });
       return;
     }
+    logAuditEvent(supabase, userId!, { action: AuditAction.TASK_DELETE, entityType: "tasks", entityId: id });
     refetch();
   }
 
