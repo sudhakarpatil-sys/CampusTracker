@@ -6,7 +6,7 @@ Pre-flight checks before making the repository public or deploying to production
 
 - [x] `.gitignore` covers all sensitive paths (`.env*`, `node_modules`, IDE dirs)
 - [x] No secrets committed in git history
-- [x] `LICENSE` file present (MIT)
+- [x] `LICENSE` file present (CampusTracker License)
 - [x] `SECURITY.md` with responsible disclosure policy
 - [x] `CONTRIBUTING.md` with setup and style guide
 - [x] `README.md` with features, setup, and architecture

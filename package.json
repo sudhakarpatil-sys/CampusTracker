@@ -2,7 +2,7 @@
   "name": "campustracker",
   "version": "0.1.0",
   "private": true,
-  "license": "MIT",
+  "license": "CampusTracker",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
