@@ -65,22 +65,42 @@ export function predictAttendance(stats: AttendanceStats, targetPercent: number)
   return { canSkip: 0, needToAttend: Math.max(needToAttend, 0), isBelowTarget: true };
 }
 
-export function formatTime(time: string) {
-  // `time` comes back from Postgres as "HH:MM:SS" — render as "9:00 AM".
-  const [hoursStr, minutesStr] = time.split(":");
-  const hours = Number(hoursStr);
-  const minutes = Number(minutesStr);
+export function formatTime(time: string | null | undefined): string {
+  if (!time || typeof time !== "string") return "12:00 AM";
+  const mins = timeToMinutes(time);
+  const hours = Math.floor(mins / 60);
+  const minutes = mins % 60;
   const period = hours >= 12 ? "PM" : "AM";
   const displayHour = hours % 12 === 0 ? 12 : hours % 12;
   return `${displayHour}:${minutes.toString().padStart(2, "0")} ${period}`;
 }
 
-export function timeToMinutes(time: string) {
-  const [h, m] = time.split(":").map(Number);
-  return (h ?? 0) * 60 + (m ?? 0);
+export function timeToMinutes(time: string | null | undefined): number {
+  if (!time || typeof time !== "string") return 0;
+  const trimmed = time.trim();
+
+  // Try 12-hour AM/PM format (e.g. "08:30 AM", "1:30 PM")
+  const ampmMatch = trimmed.match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*(am|pm)$/i);
+  if (ampmMatch) {
+    let hours = parseInt(ampmMatch[1]!, 10);
+    const minutes = parseInt(ampmMatch[2]!, 10);
+    const period = ampmMatch[3]!.toLowerCase();
+    if (period === "pm" && hours < 12) hours += 12;
+    if (period === "am" && hours === 12) hours = 0;
+    return hours * 60 + minutes;
+  }
+
+  // Standard 24-hour HH:MM or HH:MM:SS
+  const [hStr, mStr] = trimmed.split(":");
+  const h = parseInt(hStr || "0", 10);
+  const m = parseInt(mStr || "0", 10);
+  const hours = isNaN(h) ? 0 : h;
+  const minutes = isNaN(m) ? 0 : m;
+  return Math.max(0, Math.min(hours * 60 + minutes, 24 * 60 - 1));
 }
 
-export function minutesToTime(totalMinutes: number) {
+export function minutesToTime(totalMinutes: number): string {
+  if (isNaN(totalMinutes)) return "00:00";
   const clamped = Math.max(0, Math.min(totalMinutes, 24 * 60 - 1));
   const h = Math.floor(clamped / 60);
   const m = Math.round(clamped % 60);

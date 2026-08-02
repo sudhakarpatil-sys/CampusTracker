@@ -15,17 +15,22 @@ const PIXELS_PER_MINUTE = 0.9;
  * JetBrains Mono for times.
  */
 export function TimetablePreviewGrid({ items }: { items: TimetableImportItem[] }) {
-  const included = items.filter((i) => i.is_included && i.day_of_week && i.start_time && i.end_time);
+  const included = (items || []).filter(
+    (i) => i && i.is_included && i.day_of_week && i.start_time && i.end_time
+  );
 
   if (included.length === 0) {
     return <p className="py-10 text-center text-sm text-muted-foreground">No included lectures to preview yet.</p>;
   }
 
-  const starts = included.map((i) => timeToMinutes(i.start_time!));
-  const ends = included.map((i) => timeToMinutes(i.end_time!));
-  const gridStart = Math.min(...starts) - 15;
-  const gridEnd = Math.max(...ends) + 15;
-  const gridHeight = (gridEnd - gridStart) * PIXELS_PER_MINUTE;
+  const starts = included.map((i) => timeToMinutes(i.start_time));
+  const ends = included.map((i) => timeToMinutes(i.end_time));
+  const minStart = Math.min(...starts);
+  const maxEnd = Math.max(...ends);
+
+  const gridStart = isFinite(minStart) ? minStart - 15 : 7 * 60;
+  const gridEnd = isFinite(maxEnd) ? Math.max(maxEnd + 15, gridStart + 60) : 18 * 60;
+  const gridHeight = Math.max((gridEnd - gridStart) * PIXELS_PER_MINUTE, 200);
 
   return (
     <div className="overflow-x-auto">

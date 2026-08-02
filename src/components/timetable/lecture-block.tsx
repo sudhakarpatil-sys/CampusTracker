@@ -34,8 +34,8 @@ export function LectureBlock({ slot, subject, subjects, top, height, onUpdate, o
         draggable && "cursor-grab active:cursor-grabbing"
       )}
       style={{
-        top,
-        height: Math.max(height, 32),
+        top: isNaN(top) ? 0 : top,
+        height: isNaN(height) || height <= 0 ? 32 : Math.max(height, 32),
         backgroundColor: `${subject?.color ?? "#5B7FFF"}1a`,
         borderColor: `${subject?.color ?? "#5B7FFF"}55`,
       }}
