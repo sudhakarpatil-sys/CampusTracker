@@ -105,9 +105,13 @@ export function ImportWizard() {
     }
 
     const generated = await generateTimetableItems(uploadResult.importId);
-    setStepError(generated.error);
+    if (generated.error) {
+      setStepError(generated.error);
+      return;
+    }
     setItemCount(generated.itemCount);
     setConflictCount(generated.conflictCount);
+    setStep("review");
   }
 
   async function handleFileConfirmed(file: File) {
@@ -145,9 +149,13 @@ export function ImportWizard() {
       setDuplicate(null);
       setDuplicateStage(null);
       const generated = await generateTimetableItems(activeImportId);
-      setStepError(generated.error);
+      if (generated.error) {
+        setStepError(generated.error);
+        return;
+      }
       setItemCount(generated.itemCount);
       setConflictCount(generated.conflictCount);
+      setStep("review");
     }
   }
 

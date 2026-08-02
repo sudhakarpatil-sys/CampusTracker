@@ -5,6 +5,7 @@ import { requireAuth } from "@/lib/validate-request";
 import { structureFromText, structureFromDocument } from "@/lib/timetable-import/ai-structure";
 import { matchExistingSubject } from "@/lib/timetable-import/subject-matching";
 import { resolveBatchVariants } from "@/lib/timetable-import/batch-resolution";
+import { normalizeTimeString } from "@/lib/timetable-import/timetable-generation";
 
 export const POST = withErrorHandler(async (_request: Request, { params }: { params: { id: string } }) => {
   aiRateLimiter.check(_request);
@@ -70,8 +71,12 @@ export const POST = withErrorHandler(async (_request: Request, { params }: { par
   // Deterministic step: the AI reports every parallel-batch variant it
   // sees (batch_label per slot); picking the one matching this
   // student's actual batch happens here, not in the prompt — see
-  // batch-resolution.ts for why.
-  const resolvedSlots = resolveBatchVariants(structured.slots, context.batch);
+  // batch-resolution.ts for why. Also normalize time strings into "HH:MM".
+  const resolvedSlots = resolveBatchVariants(structured.slots, context.batch).map((slot) => ({
+    ...slot,
+    start_time: normalizeTimeString(slot.start_time),
+    end_time: normalizeTimeString(slot.end_time),
+  }));
 
   const { error: updateError } = await supabase
     .from("timetable_imports")

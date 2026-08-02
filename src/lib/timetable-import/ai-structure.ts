@@ -1,22 +1,29 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI, type Part } from "@google/generative-ai";
 import { aiStructuredTimetableSchema, type AiStructuredTimetable } from "@/lib/validations/timetable-import";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? "");
-
-// Free-tier model, no card required via Google AI Studio. Google
-// deprecated gemini-2.5-flash for newly-created API keys (404 "no longer
-// available to new users") shortly after this pipeline was first built —
-// gemini-3.1-flash-lite is the current free-tier model for new keys as of
-// mid-2026. If quality on messy scans isn't good enough, gemini-3.5-flash
-// is the next step up — check your AI Studio dashboard for current free-
-// tier status before switching, since availability shifts frequently.
-const MODEL = "gemini-3.1-flash-lite";
+const MODEL_CANDIDATES = [
+  "gemini-3.1-flash-lite",
+  "gemini-2.5-flash-lite",
+  "gemini-2.0-flash-lite",
+  "gemini-2.0-flash",
+  "gemini-1.5-flash",
+];
 
 interface StudentContext {
   branch: string | null;
   semester: string | null;
   academicYear: string | null;
   batch: string | null;
+}
+
+function getGenAIClient(): GoogleGenerativeAI {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey || apiKey.trim() === "") {
+    throw new Error(
+      "Gemini API key is invalid or not configured. Please get a free API key from Google AI Studio and add GEMINI_API_KEY to your environment variables."
+    );
+  }
+  return new GoogleGenerativeAI(apiKey);
 }
 
 function buildSystemPrompt({ branch, semester, academicYear }: StudentContext) {
@@ -92,9 +99,21 @@ omit a key.`;
 }
 
 function parseJsonResponse(raw: string): AiStructuredTimetable {
-  const cleaned = raw.replace(/```json|```/g, "").trim();
-  const parsed = aiStructuredTimetableSchema.safeParse(JSON.parse(cleaned));
-  if (!parsed.success) throw new Error("AI response didn't match the expected format");
+  const jsonMatch = raw.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) {
+    throw new Error("AI response did not contain a valid JSON object");
+  }
+  let jsonObject: unknown;
+  try {
+    jsonObject = JSON.parse(jsonMatch[0]);
+  } catch {
+    throw new Error("AI response contained invalid JSON syntax");
+  }
+  const parsed = aiStructuredTimetableSchema.safeParse(jsonObject);
+  if (!parsed.success) {
+    console.error("Zod validation error:", parsed.error.format());
+    throw new Error("AI response didn't match the expected format");
+  }
   return parsed.data;
 }
 
@@ -115,16 +134,38 @@ async function withRetry<T>(fn: () => Promise<T>, attempts = 3): Promise<T> {
   throw lastError;
 }
 
+async function executeGenerativeCall(
+  context: StudentContext,
+  payload: string | Part | (string | Part)[]
+): Promise<string> {
+  const genAI = getGenAIClient();
+  let lastError: unknown;
+
+  for (const modelName of MODEL_CANDIDATES) {
+    try {
+      const model = genAI.getGenerativeModel({
+        model: modelName,
+        systemInstruction: buildSystemPrompt(context),
+        generationConfig: { responseMimeType: "application/json" },
+      });
+      const result = await withRetry(() => model.generateContent(payload as never));
+      return result.response.text();
+    } catch (err) {
+      lastError = err;
+      const message = err instanceof Error ? err.message : "";
+      // If error is invalid API key, throw immediately instead of trying other models
+      if (message.includes("401") || message.includes("API key")) {
+        throw new Error("Gemini API key is invalid. Please update GEMINI_API_KEY with a valid key from Google AI Studio.");
+      }
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error("Could not process timetable with AI");
+}
+
 /** Text path: used when Milestone 3 found a usable PDF text layer. */
 export async function structureFromText(rawText: string, context: StudentContext): Promise<AiStructuredTimetable> {
-  const model = genAI.getGenerativeModel({
-    model: MODEL,
-    systemInstruction: buildSystemPrompt(context),
-    generationConfig: { responseMimeType: "application/json" },
-  });
-
-  const result = await withRetry(() => model.generateContent(`Timetable document text:\n\n${rawText}`));
-  return parseJsonResponse(result.response.text());
+  const responseText = await executeGenerativeCall(context, `Timetable document text:\n\n${rawText}`);
+  return parseJsonResponse(responseText);
 }
 
 /**
@@ -138,18 +179,11 @@ export async function structureFromDocument(
   mimeType: string,
   context: StudentContext
 ): Promise<AiStructuredTimetable> {
-  const model = genAI.getGenerativeModel({
-    model: MODEL,
-    systemInstruction: buildSystemPrompt(context),
-    generationConfig: { responseMimeType: "application/json" },
-  });
-
   const base64 = fileBuffer.toString("base64");
-  const result = await withRetry(() =>
-    model.generateContent([
-      { inlineData: { mimeType, data: base64 } },
-      { text: "Read this timetable document and respond with the JSON described in the system instructions." },
-    ])
-  );
-  return parseJsonResponse(result.response.text());
+  const payload = [
+    { inlineData: { mimeType, data: base64 } },
+    { text: "Read this timetable document and respond with the JSON described in the system instructions." },
+  ];
+  const responseText = await executeGenerativeCall(context, payload);
+  return parseJsonResponse(responseText);
 }

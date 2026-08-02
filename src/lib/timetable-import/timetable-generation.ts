@@ -1,25 +1,44 @@
 import { timeToMinutes } from "@/lib/academic";
 import type { AiDetectedSlot } from "@/lib/validations/timetable-import";
 
-const TIME_FORMAT = /^\d{1,2}:\d{2}(:\d{2})?$/;
-
-/** `timeToMinutes` (lib/academic.ts) assumes well-formed "HH:MM" input and
- * happily returns NaN/garbage on anything else — fine for rendering
- * already-valid DB rows, not safe for untrusted AI output. This wraps it
- * with the format + range check AI-generated times actually need.
- *
- * Accepts both raw AI-extracted "HH:MM" strings (pre-DB-write, in memory)
- * and "HH:MM:SS" strings — Postgres `time` columns come back from
- * Supabase with seconds, which this needs to tolerate since it's also
- * used to re-validate values already round-tripped through the DB
- * (e.g. in the Review step and the final import route). */
+/** Wrap time to minutes parsing with format + range check, supporting both
+ * 24-hour ("08:30", "14:30", "08:30:00") and 12-hour AM/PM ("08:30 AM", "1:30 PM"). */
 export function safeTimeToMinutes(time: string): number | null {
+  if (!time || typeof time !== "string") return null;
   const trimmed = time.trim();
-  if (!TIME_FORMAT.test(trimmed)) return null;
-  const [hours, mins] = trimmed.split(":");
-  const minutes = timeToMinutes(`${hours}:${mins}`);
-  if (Number.isNaN(minutes) || minutes < 0 || minutes >= 24 * 60) return null;
-  return minutes;
+
+  // 12-hour format with AM/PM (e.g. "08:30 AM", "1:30 PM", "11:45 AM")
+  const ampmMatch = trimmed.match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*(am|pm)$/i);
+  if (ampmMatch) {
+    let hours = parseInt(ampmMatch[1]!, 10);
+    const minutes = parseInt(ampmMatch[2]!, 10);
+    const period = ampmMatch[3]!.toLowerCase();
+
+    if (hours < 1 || hours > 12 || minutes < 0 || minutes > 59) return null;
+    if (period === "pm" && hours < 12) hours += 12;
+    if (period === "am" && hours === 12) hours = 0;
+    return hours * 60 + minutes;
+  }
+
+  // 24-hour format (e.g. "08:30", "14:30", "08:30:00")
+  const standardMatch = trimmed.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+  if (standardMatch) {
+    const hours = parseInt(standardMatch[1]!, 10);
+    const minutes = parseInt(standardMatch[2]!, 10);
+    if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
+    return hours * 60 + minutes;
+  }
+
+  return null;
+}
+
+/** Formats a time string into 24-hour "HH:MM" format. */
+export function normalizeTimeString(time: string): string {
+  const mins = safeTimeToMinutes(time);
+  if (mins === null) return time.trim();
+  const h = Math.floor(mins / 60).toString().padStart(2, "0");
+  const m = (mins % 60).toString().padStart(2, "0");
+  return `${h}:${m}`;
 }
 
 export interface SlotValidation {
