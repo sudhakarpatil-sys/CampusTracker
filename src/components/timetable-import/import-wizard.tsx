@@ -2,6 +2,8 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
+import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { WelcomeStep } from "@/components/timetable-import/steps/welcome-step";
 import { UploadStep } from "@/components/timetable-import/steps/upload-step";
@@ -246,14 +248,20 @@ export function ImportWizard() {
         />
       )}
 
-      {step === "review" && activeImportRow && (
-        <ReviewStep
-          importRow={activeImportRow}
-          isImporting={isImporting}
-          onBack={resetToUpload}
-          onConfirm={handleConfirmImport}
-        />
-      )}
+      {step === "review" &&
+        (activeImportRow ? (
+          <ReviewStep
+            importRow={activeImportRow}
+            isImporting={isImporting}
+            onBack={resetToUpload}
+            onConfirm={handleConfirmImport}
+          />
+        ) : (
+          <Card className="p-8 text-center">
+            <Loader2 className="mx-auto h-6 w-6 animate-spin text-accent" />
+            <p className="mt-4 text-sm font-medium">Preparing your review screen…</p>
+          </Card>
+        ))}
 
       {step === "success" && <SuccessStep subjectsCreated={subjectsCreated} slotsCreated={slotsCreated} />}
 
