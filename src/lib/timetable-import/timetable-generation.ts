@@ -7,8 +7,11 @@ export function safeTimeToMinutes(time: string): number | null {
   if (!time || typeof time !== "string") return null;
   const trimmed = time.trim();
 
-  // 12-hour format with AM/PM (e.g. "08:30 AM", "1:30 PM", "11:45 AM")
-  const ampmMatch = trimmed.match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*(am|pm)$/i);
+  // Normalize dot separator (e.g. "6.45am", "11.05 am", "1.05pm", "06.45") -> convert to colon "6:45am"
+  const normalizedDots = trimmed.replace(/^(\d{1,2})\.(\d{2})/, "$1:$2");
+
+  // 12-hour format with AM/PM (e.g. "08:30 AM", "1:30 PM", "11:45 AM", "6:45am")
+  const ampmMatch = normalizedDots.match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*(am|pm)$/i);
   if (ampmMatch) {
     let hours = parseInt(ampmMatch[1]!, 10);
     const minutes = parseInt(ampmMatch[2]!, 10);
@@ -21,7 +24,7 @@ export function safeTimeToMinutes(time: string): number | null {
   }
 
   // 24-hour format (e.g. "08:30", "14:30", "08:30:00")
-  const standardMatch = trimmed.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+  const standardMatch = normalizedDots.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
   if (standardMatch) {
     const hours = parseInt(standardMatch[1]!, 10);
     const minutes = parseInt(standardMatch[2]!, 10);
