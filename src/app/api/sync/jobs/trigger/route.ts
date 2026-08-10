@@ -4,7 +4,7 @@ import { withErrorHandler, createSuccessResponse } from '@/lib/api-error';
 import { standardRateLimiter } from '@/lib/rate-limit';
 import { SyncOrchestrator } from '@/lib/sync-engine/sync-orchestrator';
 import { createClient } from '@/lib/supabase/server';
-import { requireAuth } from '@/lib/validate-request';
+import { requireAuth, requireRole } from '@/lib/validate-request';
 
 const TriggerSyncJobSchema = z.object({
   connectorId: z.string().uuid(),
@@ -15,7 +15,7 @@ const TriggerSyncJobSchema = z.object({
 export const POST = withErrorHandler(async (req: NextRequest) => {
   standardRateLimiter.check(req);
   const supabaseAuth = createClient();
-  await requireAuth(supabaseAuth);
+  await requireRole(supabaseAuth, ['admin']);
 
   const body = await req.json();
   const parsed = TriggerSyncJobSchema.parse(body);

@@ -9,14 +9,24 @@ import { predictAttendance, computeAttendanceStats } from '@/lib/academic';
 export const GET = withErrorHandler(async (req: NextRequest) => {
   standardRateLimiter.check(req);
   const supabaseAuth = createClient();
-  await requireAuth(supabaseAuth);
+  const authUser = await requireAuth(supabaseAuth);
 
   const { searchParams } = new URL(req.url);
-  const userId = searchParams.get('userId');
+  const requestedUserId = searchParams.get('userId') || authUser.id;
   const targetPercent = Number(searchParams.get('targetPercent') || '75');
 
-  if (!userId) {
-    throw ApiError.validation('Missing userId query parameter');
+  // Server-side Student Data Isolation check
+  if (requestedUserId !== authUser.id) {
+    const { data: profile } = await supabaseAuth
+      .from('profiles')
+      .select('role')
+      .eq('id', authUser.id)
+      .single();
+
+    const role = profile?.role || 'student';
+    if (role !== 'faculty' && role !== 'admin') {
+      throw ApiError.forbidden('You are not authorized to view another student\'s attendance data');
+    }
   }
 
   const supabase = createAdminClient();
@@ -25,7 +35,7 @@ export const GET = withErrorHandler(async (req: NextRequest) => {
   const { data: records, error: recordsErr } = await supabase
     .from('attendance_records')
     .select('*, subjects(id, name, code, color)')
-    .eq('user_id', userId)
+    .eq('user_id', requestedUserId)
     .order('class_date', { ascending: false });
 
   if (recordsErr) {

@@ -4,7 +4,7 @@ import { ApiError, withErrorHandler, createSuccessResponse } from '@/lib/api-err
 import { standardRateLimiter } from '@/lib/rate-limit';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
-import { requireAuth } from '@/lib/validate-request';
+import { requireAuth, requireRole } from '@/lib/validate-request';
 
 const ResolveQuarantineSchema = z.object({
   quarantineId: z.string().uuid(),
@@ -14,7 +14,7 @@ const ResolveQuarantineSchema = z.object({
 export const GET = withErrorHandler(async (req: NextRequest) => {
   standardRateLimiter.check(req);
   const supabaseAuth = createClient();
-  await requireAuth(supabaseAuth);
+  await requireRole(supabaseAuth, ['admin']);
 
   const { searchParams } = new URL(req.url);
   const syncJobId = searchParams.get('syncJobId');
@@ -48,7 +48,7 @@ export const GET = withErrorHandler(async (req: NextRequest) => {
 export const PATCH = withErrorHandler(async (req: NextRequest) => {
   standardRateLimiter.check(req);
   const supabaseAuth = createClient();
-  await requireAuth(supabaseAuth);
+  await requireRole(supabaseAuth, ['admin']);
 
   const body = await req.json();
   const parsed = ResolveQuarantineSchema.parse(body);

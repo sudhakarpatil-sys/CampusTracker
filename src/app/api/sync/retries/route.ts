@@ -5,7 +5,7 @@ import { standardRateLimiter } from '@/lib/rate-limit';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { SyncOrchestrator } from '@/lib/sync-engine/sync-orchestrator';
 import { createClient } from '@/lib/supabase/server';
-import { requireAuth } from '@/lib/validate-request';
+import { requireAuth, requireRole } from '@/lib/validate-request';
 
 const TriggerRetrySchema = z.object({
   retryId: z.string().uuid(),
@@ -14,7 +14,7 @@ const TriggerRetrySchema = z.object({
 export const GET = withErrorHandler(async (req: NextRequest) => {
   standardRateLimiter.check(req);
   const supabaseAuth = createClient();
-  await requireAuth(supabaseAuth);
+  await requireRole(supabaseAuth, ['admin']);
 
   const { searchParams } = new URL(req.url);
   const institutionId = searchParams.get('institutionId');
@@ -43,7 +43,7 @@ export const GET = withErrorHandler(async (req: NextRequest) => {
 export const POST = withErrorHandler(async (req: NextRequest) => {
   standardRateLimiter.check(req);
   const supabaseAuth = createClient();
-  await requireAuth(supabaseAuth);
+  await requireRole(supabaseAuth, ['admin']);
 
   const body = await req.json();
   const parsed = TriggerRetrySchema.parse(body);

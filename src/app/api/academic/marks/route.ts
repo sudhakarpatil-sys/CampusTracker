@@ -8,13 +8,35 @@ import { requireAuth } from '@/lib/validate-request';
 export const GET = withErrorHandler(async (req: NextRequest) => {
   standardRateLimiter.check(req);
   const supabaseAuth = createClient();
-  await requireAuth(supabaseAuth);
+  const authUser = await requireAuth(supabaseAuth);
 
   const { searchParams } = new URL(req.url);
   const studentMasterId = searchParams.get('studentMasterId');
 
   if (!studentMasterId) {
     throw ApiError.validation('Missing studentMasterId query parameter');
+  }
+
+  // Server-side Student Data Isolation check
+  const { data: profile } = await supabaseAuth
+    .from('profiles')
+    .select('role')
+    .eq('id', authUser.id)
+    .single();
+
+  const role = profile?.role || 'student';
+
+  if (role === 'student') {
+    const { data: studentMaster } = await supabaseAuth
+      .from('student_master')
+      .select('id, user_id')
+      .eq('id', studentMasterId)
+      .single();
+
+    const sm = studentMaster as { id: string; user_id: string } | null;
+    if (!sm || sm.user_id !== authUser.id) {
+      throw ApiError.forbidden('You are not authorized to view another student\'s academic marks');
+    }
   }
 
   const supabase = createAdminClient();

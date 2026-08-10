@@ -3,12 +3,12 @@ import { ApiError, withErrorHandler, createSuccessResponse } from '@/lib/api-err
 import { standardRateLimiter } from '@/lib/rate-limit';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
-import { requireAuth } from '@/lib/validate-request';
+import { requireAuth, requireRole } from '@/lib/validate-request';
 
 export const GET = withErrorHandler(async (req: NextRequest) => {
   standardRateLimiter.check(req);
   const supabaseAuth = createClient();
-  await requireAuth(supabaseAuth);
+  await requireRole(supabaseAuth, ['admin']);
 
   const { searchParams } = new URL(req.url);
   const institutionId = searchParams.get('institutionId');

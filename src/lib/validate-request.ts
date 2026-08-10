@@ -161,3 +161,26 @@ export async function requireAuth(supabase: SupabaseClient<Database>) {
 
   return user;
 }
+
+/**
+ * Asserts that the authenticated request possesses one of the allowed roles.
+ * Throws ApiError.forbidden() if unauthorized.
+ */
+export async function requireRole(
+  supabase: SupabaseClient<Database>,
+  allowedRoles: Array<"student" | "faculty" | "admin">
+) {
+  const user = await requireAuth(supabase);
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  const role = (profile?.role || "student") as "student" | "faculty" | "admin";
+  if (!allowedRoles.includes(role)) {
+    throw ApiError.forbidden(`Operation requires one of roles: ${allowedRoles.join(", ")}`);
+  }
+
+  return { user, role };
+}
