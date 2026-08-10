@@ -201,13 +201,13 @@ export function MobileShell({
         )}
 
         {/* Main Content Scroll Area */}
-        <main className="flex-1 overflow-y-auto px-4 py-4 space-y-5 pb-24 scrollbar-thin scrollbar-thumb-slate-800 relative z-10">
+        <main className="flex-1 overflow-y-auto px-4 py-4 space-y-5 pb-36 scrollbar-thin scrollbar-thumb-slate-800 relative z-10">
           {children}
         </main>
 
         {/* Floating Bottom Navigation Bar (z-30) */}
         {bottomNav && (
-          <div className="absolute bottom-3 left-3 right-3 z-30">
+          <div className="sticky bottom-0 left-0 right-0 z-30 px-3 pb-3 pt-1 bg-gradient-to-t from-[#0B0F17] via-[#0B0F17]/95 to-transparent">
             {bottomNav}
           </div>
         )}
