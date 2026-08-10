@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { View, StyleSheet, TouchableOpacity, Text, SafeAreaView } from "react-native";
-import { Home, Calendar, GraduationCap, User } from "lucide-react-native";
+import { Home, Calendar, GraduationCap } from "lucide-react-native";
 import { colors } from "../theme/colors";
 import { useUserStore } from "../store/use-user-store";
 import { AuthScreen } from "../screens/auth/AuthScreen";
