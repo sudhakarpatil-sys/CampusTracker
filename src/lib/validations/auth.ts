@@ -43,3 +43,29 @@ export const resetPasswordSchema = z
     path: ["confirmPassword"],
   });
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
+
+/**
+ * Detects whether an email belongs to a Faculty member, Administrator, or Student
+ * based on institutional email patterns (e.g. faculty@, prof@, @faculty., @staff., HOD).
+ */
+export function detectRoleFromEmail(email?: string | null): "student" | "faculty" | "admin" {
+  if (!email) return "student";
+  const lower = email.toLowerCase();
+
+  if (lower.includes("admin") || lower.includes("sysadmin")) {
+    return "admin";
+  }
+
+  if (
+    lower.includes("faculty") ||
+    lower.includes("prof") ||
+    lower.includes("teacher") ||
+    lower.includes("hod") ||
+    lower.includes("staff") ||
+    lower.includes("instructor")
+  ) {
+    return "faculty";
+  }
+
+  return "student";
+}

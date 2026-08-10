@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AvatarUpload } from "@/components/shared/avatar-upload";
 import { createClient } from "@/lib/supabase/client";
 import { onboardingSchema, type OnboardingInput } from "@/lib/validations/onboarding";
+import { detectRoleFromEmail } from "@/lib/validations/auth";
 import { DEPARTMENTS, SEMESTERS } from "@/lib/constants";
 import { useUser } from "@/hooks/use-user";
 import { toast } from "@/hooks/use-toast";
@@ -58,32 +59,43 @@ export function OnboardingFlow() {
       }
     }
 
+    const detectedRole = detectRoleFromEmail(user.email);
+
+    const payload: Record<string, unknown> = {
+      id: user.id,
+      role: detectedRole,
+      full_name: values.fullName,
+      college_name: values.collegeName,
+      university: values.university,
+      department: values.department,
+      branch: values.branch,
+      semester: values.semester,
+      academic_year: values.academicYear,
+      roll_number: values.rollNumber,
+      batch: values.batch || null,
+      onboarding_completed: true,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (avatarUrl) {
+      payload.avatar_url = avatarUrl;
+    }
+
     const { error } = await supabase
       .from("profiles")
-      .upsert({
-        id: user.id,
-        full_name: values.fullName,
-        college_name: values.collegeName,
-        university: values.university,
-        department: values.department,
-        branch: values.branch,
-        semester: values.semester,
-        academic_year: values.academicYear,
-        roll_number: values.rollNumber,
-        batch: values.batch || null,
-        avatar_url: avatarUrl ?? undefined,
-        onboarding_completed: true,
-      } as never);
+      .upsert(payload as never);
 
     if (error) {
       toast({ title: "Couldn't save your profile", description: error.message });
       return;
     }
 
+    // Sync onboarding state into Supabase Auth user metadata for zero-delay middleware checks
+    await supabase.auth.updateUser({ data: { onboarding_completed: true } });
+
     await refreshProfile();
     toast({ title: "You're all set", description: "Welcome to CampusTracker." });
-    router.push("/dashboard");
-    router.refresh();
+    window.location.href = "/dashboard";
   }
 
   return (

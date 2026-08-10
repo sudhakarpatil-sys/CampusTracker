@@ -34,6 +34,8 @@ export interface Database {
           roll_number: string | null;
           batch: string | null;
           onboarding_completed: boolean;
+          role: string | null;
+          designation: string | null;
           created_at: string;
           updated_at: string;
         },
@@ -237,6 +239,92 @@ export interface Database {
           updated_at: string;
         },
         "user_id" | "exam_date"
+      >;
+      sync_connectors: Table<
+        {
+          id: string;
+          institution_id: string;
+          name: string;
+          connector_type: string;
+          config: Json;
+          field_mappings: Json;
+          sync_frequency: string;
+          is_active: boolean;
+          last_synced_at: string | null;
+          created_at: string;
+          updated_at: string;
+        },
+        "institution_id" | "name"
+      >;
+      sync_jobs: Table<
+        {
+          id: string;
+          connector_id: string;
+          institution_id: string;
+          status: string;
+          triggered_by: string;
+          processed_rows: number;
+          inserted_rows: number;
+          updated_rows: number;
+          quarantined_rows: number;
+          error_log: string | null;
+          execution_time_ms: number | null;
+          started_at: string;
+          completed_at: string | null;
+        },
+        "connector_id" | "institution_id"
+      >;
+      sync_quarantine_rows: Table<
+        {
+          id: string;
+          sync_job_id: string;
+          institution_id: string;
+          raw_data: Json;
+          failure_reason: string;
+          is_resolved: boolean;
+          resolved_at: string | null;
+          created_at: string;
+        },
+        "sync_job_id" | "institution_id"
+      >;
+      retry_queue: Table<
+        {
+          id: string;
+          connector_id: string;
+          institution_id: string;
+          attempt_count: number;
+          next_retry_at: string;
+          error_reason: string | null;
+          status: string;
+          created_at: string;
+        },
+        "connector_id" | "institution_id"
+      >;
+      institutions: Table<
+        {
+          id: string;
+          name: string;
+          code: string;
+          domain: string | null;
+          logo_url: string | null;
+          primary_color: string | null;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        },
+        "name" | "code"
+      >;
+      audit_logs: Table<
+        {
+          id: string;
+          user_id: string | null;
+          action: string;
+          entity_type: string | null;
+          entity_id: string | null;
+          metadata: Json;
+          created_at: string;
+        },
+        "action"
       >;
     };
     Views: Record<string, never>;

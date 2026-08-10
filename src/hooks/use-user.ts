@@ -17,13 +17,18 @@ export function useUser() {
 
   const loadProfile = React.useCallback(
     async (userId: string) => {
-      const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
-      if (error) {
+      try {
+        const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
+        if (error) {
+          // eslint-disable-next-line no-console
+          console.error("Failed to load profile:", error.message);
+          return;
+        }
+        setProfile(data);
+      } catch (err) {
         // eslint-disable-next-line no-console
-        console.error("Failed to load profile:", error.message);
-        return;
+        console.error("Profile load error:", err);
       }
-      setProfile(data);
     },
     [supabase]
   );
@@ -31,17 +36,34 @@ export function useUser() {
   React.useEffect(() => {
     let mounted = true;
 
-    supabase.auth.getUser().then(({ data }) => {
-      if (!mounted) return;
-      setUser(data.user);
-      if (data.user) loadProfile(data.user.id);
-      setIsLoading(false);
-    });
+    async function initAuth() {
+      try {
+        const { data } = await supabase.auth.getUser();
+        if (!mounted) return;
+        setUser(data.user);
+        if (data.user) {
+          await loadProfile(data.user.id);
+        }
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error("Auth init error:", err);
+      } finally {
+        if (mounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    initAuth();
 
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return;
       setUser(session?.user ?? null);
-      if (session?.user) loadProfile(session.user.id);
-      else setProfile(null);
+      if (session?.user) {
+        loadProfile(session.user.id);
+      } else {
+        setProfile(null);
+      }
     });
 
     return () => {

@@ -7,9 +7,18 @@ import { Topbar } from "@/components/layout/topbar";
 import { cn } from "@/lib/utils";
 import { FeedbackButton } from "@/components/shared/feedback-button";
 
+import { usePathname } from "next/navigation";
+
 export function AppShell({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const [collapsed, setCollapsed] = React.useState(false);
   const [mobileOpen, setMobileOpen] = React.useState(false);
+
+  // Admin and Faculty route trees render their own dedicated portal layouts (AdminLayout / FacultyLayout).
+  // Bypass student AppShell for these portals to avoid duplicate sidebars and double headers.
+  if (pathname?.startsWith("/admin") || pathname?.startsWith("/faculty")) {
+    return <>{children}</>;
+  }
 
   return (
     <div className="flex min-h-screen bg-background">

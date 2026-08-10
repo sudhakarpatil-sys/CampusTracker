@@ -76,7 +76,13 @@ export function Features() {
   return (
     <section id="features" className="relative border-t border-border/60 bg-muted/20 py-24">
       <div className="container">
-        <div className="mx-auto max-w-2xl text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.5 }}
+          className="mx-auto max-w-2xl text-center"
+        >
           <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-3.5 py-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400">
             <Sparkles className="h-3.5 w-3.5" />
             <span>Complete Academic Suite</span>
@@ -89,7 +95,7 @@ export function Features() {
           <p className="mt-4 text-base text-muted-foreground leading-relaxed">
             Stop switching between five different apps. CampusTracker connects your schedule, tasks, attendance, and notes into one seamless operating system.
           </p>
-        </div>
+        </motion.div>
 
         <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {FEATURES.map((feature, i) => {

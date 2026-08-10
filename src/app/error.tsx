@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { AlertTriangle, Home, RefreshCw, MessageSquare } from "lucide-react";
+import { AlertTriangle, Home, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function ErrorPage({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {

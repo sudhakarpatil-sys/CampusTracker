@@ -79,7 +79,18 @@ export function Hero() {
             className="h-12 border-border/80 px-7 text-sm font-medium hover:bg-muted/50"
             asChild
           >
-            <a href="#features">
+            <a
+              href="#features"
+              onClick={(e) => {
+                e.preventDefault();
+                const el = document.getElementById("features");
+                if (el) {
+                  const yOffset = -72;
+                  const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                  window.scrollTo({ top: y, behavior: "smooth" });
+                }
+              }}
+            >
               <PlayCircle className="mr-2 h-4 w-4 text-indigo-500" /> Explore Features
             </a>
           </Button>

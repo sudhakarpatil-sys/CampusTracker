@@ -37,9 +37,9 @@ export function Benefits() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: "-60px" }}
               transition={{ duration: 0.4, delay: i * 0.08 }}
-              className="flex items-start gap-3.5 rounded-xl border border-border/60 bg-card p-4.5 shadow-sm transition-all duration-200 hover:border-emerald-500/40 hover:shadow-md"
+              className="flex items-center gap-3.5 rounded-xl border border-border/60 bg-card p-4 sm:p-4.5 shadow-sm transition-all duration-200 hover:border-emerald-500/40 hover:shadow-md"
             >
-              <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
                 <Check className="h-4 w-4" />
               </span>
               <p className="text-sm font-medium text-foreground leading-relaxed">{benefit}</p>

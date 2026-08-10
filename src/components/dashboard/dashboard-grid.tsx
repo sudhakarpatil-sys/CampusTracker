@@ -12,14 +12,22 @@ import { AssignmentsWidget } from "@/components/dashboard/widgets/assignments-wi
 import { EventsWidget } from "@/components/dashboard/widgets/events-widget";
 import { TasksWidget } from "@/components/dashboard/widgets/tasks-widget";
 import { NotesWidget } from "@/components/dashboard/widgets/notes-widget";
+import { UpcomingExamsWidget } from "@/components/dashboard/widgets/upcoming-exams-widget";
+import { InternalMarksWidget } from "@/components/dashboard/widgets/internal-marks-widget";
+import { AcademicInsightsWidget } from "@/components/dashboard/widgets/academic-insights-widget";
+import { RecentActivityWidget } from "@/components/dashboard/widgets/recent-activity-widget";
 
 const WIDGET_MAP: Record<WidgetId, { label: string; Component: React.ComponentType<{ onHide?: () => void; draggableProps?: React.HTMLAttributes<HTMLButtonElement> }> }> = {
   "todays-schedule": { label: "Today's schedule", Component: TodaysScheduleWidget },
   attendance: { label: "Overall attendance", Component: AttendanceWidget },
+  "academic-insights": { label: "Academic insights", Component: AcademicInsightsWidget },
   assignments: { label: "Upcoming assignments", Component: AssignmentsWidget },
+  "upcoming-exams": { label: "Upcoming exams", Component: UpcomingExamsWidget },
   events: { label: "Upcoming events", Component: EventsWidget },
+  "internal-marks": { label: "Internal marks", Component: InternalMarksWidget },
   tasks: { label: "Tasks", Component: TasksWidget },
   notes: { label: "Recent notes", Component: NotesWidget },
+  "recent-activity": { label: "Recent activity", Component: RecentActivityWidget },
 };
 
 export function DashboardGrid() {

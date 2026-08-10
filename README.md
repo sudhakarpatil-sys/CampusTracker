@@ -1,151 +1,110 @@
-# CampusTracker
+# CampusTracker — Official Academic Platform & Attendance Engine
 
-CampusTracker helps college students manage attendance, assignments,
-timetable, exams, notes, and productivity in one private, calm dashboard.
+CampusTracker is an official college academic management engine and smart mobile/web application that tracks **official attendance, timetable, assignments, exam marks, notes, and class announcements** directly from institution ERP systems, CSV data pipelines, and faculty broadcasts.
 
-**Status: Phase 1 (foundation) + Phase 2 (academic management system).**
-Phase 1 covers auth, onboarding, profile, dashboard shell, navigation,
-settings, and theming. Phase 2 adds the full academic system: subjects,
-a drag-and-drop timetable, one-click attendance with analytics and
-predictions, assignments (Kanban/List/Calendar), notes, tasks, events,
-exams, a unified calendar, global search, and quick actions — all backed
-by Supabase with Row Level Security and real-time sync.
+**Status: Production-Ready (Phase 4C ERP Connector Framework + Phase 5C Mobile App & Event Bus)**
 
-## Tech stack
+---
 
-| Layer      | Choice                                                        |
-| ---------- | -------------------------------------------------------------- |
-| Frontend   | Next.js 14 (App Router), React 18, TypeScript                  |
-| Styling    | Tailwind CSS, shadcn/ui-style components, Framer Motion         |
-| Icons      | lucide-react                                                    |
-| Auth/DB    | Supabase (Auth, Postgres, Row Level Security, Storage)          |
-| Forms      | React Hook Form + Zod                                           |
-| Deployment | Vercel                                                          |
+## Key Platform Evolution
 
-## Getting started
+> **Major Architectural Transition:**
+> CampusTracker has evolved from a manual self-attendance logging tool into an **Official College Academic Platform**. It connects directly to institutional ERP databases, CSV feeds, and Google Sheets via the **Academic Sync Engine** to ingest official college attendance records, real-time timetable slots, and internal exam marks with zero manual entry required from students.
+
+---
+
+## Core Features & Modules
+
+### 1. Official Attendance & Safe-Leave Engine™
+- **Live Official Attendance Ingestion**: Ingests daily attendance logs directly from college ERPs and faculty marksheets.
+- **75% Safe-Leave Calculator**: Automatically computes exact safe leaves remaining before falling below the mandatory 75% institutional threshold.
+- **Subject-Wise Analytics**: Interactive attendance gauge rings, weekly trend lines, and absence breakdown.
+
+### 2. Multi-Role Consoles (Student, Faculty, Admin)
+- **Student App**: Personal academic hub — Attendance progress, today's lecture timeline, pending assignments, course resources, and real-time class announcements.
+- **Faculty App**: Academic management console — Broadcast class announcements, publish lecture notes/PDFs, assign course tasks, and view teaching timetables.
+- **Admin Connector Console**: Management suite for institutional ERP connectors, sync job monitoring, data quarantine, retry queues, and CSV emergency data imports.
+
+### 3. Real-Time Announcement Event Bus
+- Real-time event bus connecting Faculty broadcasts directly to Student mobile feeds, Smart Stack™ cards, and unread notification alerts.
+- Click-to-expand **Announcement Reader Drawer** with full text wrapping and preview line clamping.
+
+### 4. Automatic Faculty Email Verification
+- Client-side & Supabase PostgreSQL trigger (`0016_auto_faculty_role_trigger.sql`) that automatically detects official faculty email domains (`@college.edu.in`, `faculty@`, `prof@`, `hod@`) and assigns `role = 'faculty'` upon signup.
+
+### 5. Progressive Web App (PWA) & Smartphone Experience
+- Mobile-first dark obsidian shell (`/mobile`) with role switching (`NEW USER`, `STUDENT`, `FACULTY`, `ADMIN`).
+- Configured for 1-click home screen installation on iOS and Android devices.
+
+---
+
+## Tech Stack
+
+| Layer | Technology Choice |
+| :--- | :--- |
+| **Frontend** | Next.js 14 (App Router), React 18, TypeScript |
+| **Styling** | Vanilla Tailwind CSS, Glassmorphic Obsidian Tokens, Lucide Icons |
+| **Database & Auth** | Supabase (PostgreSQL, Row Level Security, Storage, Auth Triggers) |
+| **Forms & Validation** | React Hook Form + Zod Schema Validation |
+| **Sync Engine** | Node.js Academic Connector Framework (API, CSV, Google Sheets, SQL) |
+| **Deployment** | Vercel Global Edge Network |
+
+---
+
+## Getting Started
 
 ```bash
+# Clone the repository
+git clone https://github.com/sudhakarpatil-sys/CampusTracker.git
+cd campustracker
+
+# Install dependencies
 npm install
-cp .env.example .env.local   # then fill in your Supabase project values
+
+# Set up environment variables
+cp .env.example .env.local
+
+# Run local development server
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open **`http://localhost:3000`** in your browser, or **`http://localhost:3000/mobile`** for the mobile experience preview.
 
-You'll also need a Supabase project with the Phase 1 schema applied —
-see **[supabase/README.md](./supabase/README.md)** for the full setup
-(migration, Google OAuth, redirect URLs).
+---
 
-### Environment variables
+## Environment Variables
 
-| Variable                        | Required | Notes                                          |
-| -------------------------------- | -------- | ----------------------------------------------- |
-| `NEXT_PUBLIC_SUPABASE_URL`        | Yes      | Project Settings → API                          |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY`   | Yes      | Project Settings → API (anon/public key)        |
-| `NEXT_PUBLIC_SITE_URL`            | Yes      | Used for OAuth/email redirect links             |
-| `SUPABASE_SERVICE_ROLE_KEY`       | No       | Only needed for future server-only admin routes |
+| Variable | Description | Required |
+| :--- | :--- | :--- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Live Supabase Project URL | Yes |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public Anon API Key | Yes |
+| `SUPABASE_SERVICE_ROLE_KEY` | Admin Service Role Key (for background sync) | Yes |
+| `NEXT_PUBLIC_SITE_URL` | Base application URL (`http://localhost:3000`) | Yes |
 
-## Folder structure
+---
 
+## Database Migrations
+
+Apply the migration scripts in `supabase/migrations/` sequentially in your Supabase SQL Editor:
+
+1. `0001_init.sql` — Core schema & initial tables.
+2. `0012_academic_platform_sync.sql` — Academic connector tables & sync logs.
+3. `0013_cleanup_legacy_data.sql` — Data cleanup & structure alignment.
+4. `0014_connector_framework.sql` — Institutional API & CSV connector schemas.
+5. `0015_add_role_to_profiles.sql` — Multi-role RBAC schema (`student`, `faculty`, `admin`).
+6. `0016_auto_faculty_role_trigger.sql` — Automatic faculty email role detection trigger.
+
+---
+
+## Production Build & Deploy
+
+```bash
+# Verify TypeScript types
+npm run typecheck
+
+# Run production build
+npm run build
+
+# Start production server
+npm run start
 ```
-src/
-  app/
-    (marketing)/            Public landing page + its layout (navbar/footer)
-    (auth)/                 Login, signup, forgot/reset password, verify-email
-    (app)/                  Everything behind auth: dashboard, feature pages, settings
-    onboarding/              Full-screen onboarding flow (outside the app shell)
-    auth/callback/           OAuth + email-link exchange route
-    offline/                 Offline state page
-    globals.css              Design tokens + Tailwind layers
-    layout.tsx               Root layout: fonts, ThemeProvider, Toaster
-    not-found.tsx / error.tsx / global-error.tsx   Error + 404/500 states
-  components/
-    ui/                      Hand-written shadcn/ui-style primitives (button, card, dialog, ...)
-    landing/                 Landing page sections (hero, features, FAQ, ...)
-    auth/                    Auth forms + shared auth shell
-    onboarding/              Multi-step onboarding form
-    dashboard/               Dashboard grid + widget shell + widgets/
-    layout/                  App shell: sidebar, topbar, breadcrumbs, notifications, user menu
-    settings/                Settings tabs + one form per settings section
-    shared/                  Cross-cutting UI: theme provider/toggle, empty states, avatar upload
-  hooks/                     use-user, use-theme (via context), use-widgets, use-notifications, use-toast
-  lib/
-    supabase/                Browser client, server client, middleware session helper
-    validations/              Zod schemas for auth, onboarding, profile forms
-    constants.ts              Nav items, dropdown options, default widget order
-    utils.ts                  cn(), formatDate(), getInitials()
-  types/
-    database.types.ts         Hand-authored types mirroring the SQL schema
-  middleware.ts                Auth guard + onboarding-gate redirect logic
-supabase/
-  migrations/0001_init.sql     Tables, RLS policies, triggers, storage bucket
-  README.md                     Step-by-step Supabase setup guide
-```
-
-## Architecture notes
-
-- **Route groups separate concerns.** `(marketing)`, `(auth)`, and `(app)`
-  each have their own layout, so the landing page's navbar/footer never
-  leak into the dashboard shell, and auth screens stay full-bleed.
-- **Auth + onboarding gating lives in `middleware.ts`.** It refreshes the
-  Supabase session on every request, then makes exactly one redirect
-  decision: unauthenticated → landing page, authenticated-but-incomplete
-  onboarding → `/onboarding`, authenticated on an auth page → `/dashboard`.
-  Pages themselves don't need to repeat this logic.
-- **Two Supabase clients, one helper.** `lib/supabase/client.ts` is for
-  Client Components, `lib/supabase/server.ts` is for Server Components/Route
-  Handlers, and `lib/supabase/middleware.ts` is the shared piece both the
-  middleware and (indirectly) the server client rely on for cookie syncing.
-- **Every table is RLS-scoped to `auth.uid()`.** See
-  `supabase/migrations/0001_init.sql` — no table can be read or written by
-  anyone other than its owner, including via the client-side anon key.
-- **Dashboard widgets are decoupled from the grid.** `useWidgets()` owns
-  order/visibility (persisted to `localStorage` for now, designed to move to
-  `user_preferences.dashboard_layout` once that's wired up), while each
-  widget is a self-contained component under `components/dashboard/widgets/`.
-  Adding a real widget later means building the data-fetching version and
-  swapping it into `WIDGET_MAP` in `dashboard-grid.tsx`.
-- **Placeholder feature pages share one component.** `ComingSoonPage` in
-  `components/shared/coming-soon.tsx` keeps Attendance/Assignments/Timetable/
-  Notes/Calendar/Exams/Analytics visually consistent until each ships.
-- **Design tokens are centralized** in `src/app/globals.css` (CSS variables
-  for light/dark) and `tailwind.config.ts` (semantic color names). Changing
-  the palette means editing one file, not hunting through components.
-
-## Design direction
-
-See **[DESIGN.md](./DESIGN.md)** for the rationale behind the visual
-system — palette, typography, and the "notebook margin" signature motif
-used across the landing page and dashboard.
-
-## Scripts
-
-| Command            | Description                          |
-| ------------------- | ------------------------------------- |
-| `npm run dev`        | Start the dev server                  |
-| `npm run build`      | Production build                      |
-| `npm run start`      | Serve the production build            |
-| `npm run lint`       | ESLint                                |
-| `npm run typecheck`  | `tsc --noEmit`                         |
-
-## Deploying
-
-1. Push this repo to GitHub.
-2. Import it in [Vercel](https://vercel.com/new).
-3. Add the environment variables from `.env.example`.
-4. Add your Vercel deployment URL to Supabase's Redirect URLs (see
-   `supabase/README.md`).
-
-## Roadmap (not yet built)
-
-AI assistant · general productivity Analytics page · PWA/offline mode ·
-push notifications · multi-device sync beyond Supabase's built-in
-realtime · QR attendance · OCR assignment scanner · WhatsApp/Discord
-notifications · premium plans · rich WYSIWYG note editing (notes currently
-use Markdown with live preview, not a full WYSIWYG rich-text editor) ·
-inline attachment previews for assignments (the `attachments` jsonb column
-exists and is ready, but the UI for it isn't built yet — notes already
-have working attachment upload).
-
-The database schema, RLS design, and hook architecture from Phase 2 were
-built so each of these is additive rather than a rewrite.

@@ -19,7 +19,7 @@ export const POST = withErrorHandler(async (request: Request) => {
   // Rate limit: 5 submissions per hour per IP.
   feedbackRateLimiter.check(request);
 
-  const supabase = await createClient();
+  const supabase = createClient();
   const user = await requireAuth(supabase);
   const data = await validateRequestBody(request, feedbackSchema);
 

@@ -1,6 +1,7 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "@/types/database.types";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 /**
  * Refreshes the Supabase auth session on every request and returns both
@@ -37,18 +38,29 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   let onboardingCompleted: boolean | null = null;
+  let userRole: string | null = null;
+
   if (user) {
-    const { data: profile, error } = await supabase
+    const metaOnboarding = user.user_metadata?.onboarding_completed;
+    const metaRole = user.user_metadata?.role;
+
+    const { data: profile } = await supabase
       .from("profiles")
-      .select("onboarding_completed")
+      .select("onboarding_completed, role")
       .eq("id", user.id)
       .maybeSingle();
-    if (error) {
-      // eslint-disable-next-line no-console
-      console.error("Middleware profile lookup failed:", error.message);
+
+    if (profile && typeof profile.onboarding_completed === "boolean") {
+      onboardingCompleted = profile.onboarding_completed;
+      userRole = profile.role || (metaRole as string) || "student";
+    } else if (metaOnboarding !== undefined) {
+      onboardingCompleted = Boolean(metaOnboarding);
+      userRole = (metaRole as string) || "student";
+    } else {
+      onboardingCompleted = false;
+      userRole = "student";
     }
-    onboardingCompleted = profile?.onboarding_completed ?? false;
   }
 
-  return { response, user, onboardingCompleted };
+  return { response, user, onboardingCompleted, userRole };
 }

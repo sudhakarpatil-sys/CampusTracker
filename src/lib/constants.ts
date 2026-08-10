@@ -12,6 +12,10 @@ import {
   BookOpen,
   CheckSquare,
   PartyPopper,
+  Megaphone,
+  Bell,
+  User,
+  FolderKanban,
 } from "lucide-react";
 
 export const APP_NAME = "CampusTracker";
@@ -33,10 +37,14 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Assignments", href: "/assignments", icon: ListChecks },
   { label: "Tasks", href: "/tasks", icon: CheckSquare },
   { label: "Notes", href: "/notes", icon: NotebookText },
+  { label: "Resources", href: "/resources", icon: FolderKanban },
   { label: "Events", href: "/events", icon: PartyPopper },
   { label: "Exams", href: "/exams", icon: GraduationCap },
+  { label: "Announcements", href: "/announcements", icon: Megaphone },
   { label: "Calendar", href: "/calendar", icon: CalendarDays },
-  { label: "Analytics", href: "/analytics", icon: BarChart3, comingSoon: true },
+  { label: "Analytics", href: "/analytics", icon: BarChart3 },
+  { label: "Notifications", href: "/notifications", icon: Bell },
+  { label: "Profile", href: "/profile", icon: User },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 
@@ -58,10 +66,14 @@ export const SEMESTERS = Array.from({ length: 8 }, (_, i) => String(i + 1));
 export const DEFAULT_WIDGET_ORDER = [
   "todays-schedule",
   "attendance",
+  "academic-insights",
   "assignments",
+  "upcoming-exams",
   "events",
+  "internal-marks",
   "tasks",
   "notes",
+  "recent-activity",
 ] as const;
 
 // ─────────────────────────────────────────────────────────────────────────

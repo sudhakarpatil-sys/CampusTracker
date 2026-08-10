@@ -127,6 +127,79 @@ export function ExamList() {
           })}
         </div>
       )}
+
+      {/* Internal & Mid-Sem Exam Results Section */}
+      <Card className="glass-shelf mt-8 p-5">
+        <div className="flex items-center justify-between border-b border-border/60 pb-3">
+          <div>
+            <h2 className="font-display text-base font-bold text-foreground flex items-center gap-2">
+              <GraduationCap className="h-4 w-4 text-indigo-500" /> Published Mid-Sem & Internal Results
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Official scores published by your subject faculty members.
+            </p>
+          </div>
+          <Badge variant="outline" className="border-indigo-500/30 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-xs">
+            Semester 5
+          </Badge>
+        </div>
+
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="rounded-xl border border-border/60 p-4 transition-all hover:bg-muted/30">
+            <div className="flex items-center justify-between">
+              <p className="font-display text-sm font-bold text-foreground">Database Management Systems</p>
+              <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-[10px]">
+                90%
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground font-mono mt-0.5">CS301 · Mid-Sem 1</p>
+            <div className="mt-3 flex items-baseline justify-between text-xs">
+              <span className="text-muted-foreground">Score:</span>
+              <span className="font-mono font-bold text-foreground">27 / 30</span>
+            </div>
+            <div className="mt-1 flex items-baseline justify-between text-xs">
+              <span className="text-muted-foreground">Faculty:</span>
+              <span className="text-foreground">Dr. Rajesh Sharma</span>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-border/60 p-4 transition-all hover:bg-muted/30">
+            <div className="flex items-center justify-between">
+              <p className="font-display text-sm font-bold text-foreground">Operating Systems</p>
+              <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-[10px]">
+                80%
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground font-mono mt-0.5">CS302 · Mid-Sem 1</p>
+            <div className="mt-3 flex items-baseline justify-between text-xs">
+              <span className="text-muted-foreground">Score:</span>
+              <span className="font-mono font-bold text-foreground">24 / 30</span>
+            </div>
+            <div className="mt-1 flex items-baseline justify-between text-xs">
+              <span className="text-muted-foreground">Faculty:</span>
+              <span className="text-foreground">Prof. Ananya Sen</span>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-border/60 p-4 transition-all hover:bg-muted/30">
+            <div className="flex items-center justify-between">
+              <p className="font-display text-sm font-bold text-foreground">Computer Networks</p>
+              <Badge className="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/30 text-[10px]">
+                96%
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground font-mono mt-0.5">CS303 · Mid-Sem 1</p>
+            <div className="mt-3 flex items-baseline justify-between text-xs">
+              <span className="text-muted-foreground">Score:</span>
+              <span className="font-mono font-bold text-foreground">29 / 30</span>
+            </div>
+            <div className="mt-1 flex items-baseline justify-between text-xs">
+              <span className="text-muted-foreground">Faculty:</span>
+              <span className="text-foreground">Dr. Vikram Sethi</span>
+            </div>
+          </div>
+        </div>
+      </Card>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { DashboardHero } from "@/components/dashboard/dashboard-hero";
 import { DashboardMetrics } from "@/components/dashboard/dashboard-metrics";
 import { QuickActions } from "@/components/dashboard/quick-actions";
 import { DashboardGrid } from "@/components/dashboard/dashboard-grid";
+import { SmartStackCard } from "@/components/dashboard/smart-stack-card";
 
 export const metadata: Metadata = { title: "Dashboard — CampusTracker" };
 
@@ -29,6 +30,9 @@ export default async function DashboardPage() {
 
       {/* Quick Action Bar */}
       <QuickActions />
+
+      {/* Smart Stack — Event-Driven Priority Alerts */}
+      <SmartStackCard />
 
       {/* Interactive Widget Grid */}
       <DashboardGrid />

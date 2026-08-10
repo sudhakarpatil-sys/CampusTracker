@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Bell, CheckCheck } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -67,6 +68,15 @@ export function NotificationPanel() {
                 </div>
               </div>
             ))}
+        </div>
+
+        <div className="mt-4 border-t border-border pt-3">
+          <Link
+            href={"/notifications" as any}
+            className="flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-medium text-indigo-600 hover:bg-indigo-500/10 transition-colors dark:text-indigo-400"
+          >
+            View All Notifications
+          </Link>
         </div>
       </SheetContent>
     </Sheet>

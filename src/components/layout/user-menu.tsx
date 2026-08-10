@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LogOut, Settings, User as UserIcon } from "lucide-react";
+import { LogOut, Settings, User as UserIcon, Smartphone } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,6 +45,11 @@ export function UserMenu() {
           <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link href="/mobile">
+            <Smartphone className="mr-2 h-4 w-4 text-purple-400" /> Mobile App
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link href="/settings/profile">
             <UserIcon className="mr-2 h-4 w-4" /> Profile

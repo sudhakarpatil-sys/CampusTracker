@@ -1,5 +1,10 @@
+"use client";
+
 import Link from "next/link";
+import { motion } from "framer-motion";
+import { ArrowUp } from "lucide-react";
 import { Logo } from "@/components/shared/logo";
+import { Button } from "@/components/ui/button";
 import { APP_NAME } from "@/lib/constants";
 
 const COLUMNS = [
@@ -21,11 +26,32 @@ const COLUMNS = [
 ];
 
 export function Footer() {
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (href.startsWith("#")) {
+      e.preventDefault();
+      const targetId = href.substring(1);
+      if (targetId === "product" || !targetId) {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        const el = document.getElementById(targetId);
+        if (el) {
+          const yOffset = -72;
+          const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
+          window.scrollTo({ top: y, behavior: "smooth" });
+        }
+      }
+    }
+  };
+
+  const handleScrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
-    <footer className="border-t border-border/60 bg-card/60 py-12">
+    <footer className="border-t border-border/60 bg-card/60 py-12 relative">
       <div className="container flex flex-col gap-10 sm:flex-row sm:justify-between">
         <div className="max-w-xs">
-          <Link href="/">
+          <Link href="/" onClick={handleScrollToTop} title="Scroll to top">
             <Logo size="sm" />
           </Link>
           <p className="mt-3 text-xs text-muted-foreground leading-relaxed">
@@ -33,14 +59,18 @@ export function Footer() {
           </p>
         </div>
 
-        <div className="flex gap-16">
+        <div className="flex gap-16 items-start">
           {COLUMNS.map((col) => (
             <div key={col.title}>
               <p className="text-xs font-bold uppercase tracking-wider text-foreground">{col.title}</p>
               <ul className="mt-3 space-y-2">
                 {col.links.map((link) => (
                   <li key={link.label}>
-                    <a href={link.href} className="text-xs text-muted-foreground transition-colors hover:text-foreground">
+                    <a
+                      href={link.href}
+                      onClick={(e) => handleNavClick(e, link.href)}
+                      className="text-xs text-muted-foreground transition-colors hover:text-foreground cursor-pointer"
+                    >
                       {link.label}
                     </a>
                   </li>
@@ -48,6 +78,20 @@ export function Footer() {
               </ul>
             </div>
           ))}
+
+          {/* Scroll to Top Action Button */}
+          <div className="hidden sm:flex flex-col items-end gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleScrollToTop}
+              title="Back to top"
+              className="h-9 w-9 rounded-full border-border/80 hover:bg-indigo-500/10 hover:text-indigo-500 transition-all duration-200"
+            >
+              <ArrowUp className="h-4 w-4" />
+            </Button>
+            <span className="text-[10px] text-muted-foreground font-mono">Back to top</span>
+          </div>
         </div>
       </div>
 

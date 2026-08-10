@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 
-const PUBLIC_ROUTES = ["/", "/login", "/signup", "/forgot-password", "/reset-password", "/verify-email", "/auth/callback", "/offline"];
+const PUBLIC_ROUTES = ["/", "/login", "/signup", "/forgot-password", "/reset-password", "/verify-email", "/auth/callback", "/offline", "/mobile"];
 // Routes an already-authenticated user shouldn't linger on — sent to
 // their dashboard instead. "/" is included so reopening the site after
 // closing the tab lands you back in the app instead of the marketing
@@ -67,7 +67,7 @@ function applySecurityHeaders(response: NextResponse): NextResponse {
 }
 
 export async function middleware(request: NextRequest) {
-  const { response, user, onboardingCompleted } = await updateSession(request);
+  const { response, user, onboardingCompleted, userRole } = await updateSession(request);
   const { pathname } = request.nextUrl;
 
   // API routes (added in Phase 3A) are called via fetch(), not full-page
@@ -111,6 +111,29 @@ export async function middleware(request: NextRequest) {
     url.pathname = "/dashboard";
     url.search = "";
     return applySecurityHeaders(NextResponse.redirect(url));
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Role-Based Access Control (RBAC) Route Guards (Phase 4C)
+  // ─────────────────────────────────────────────────────────────────────────
+  if (user && onboardingCompleted === true) {
+    const effectiveRole = userRole || "student";
+
+    // Admin Console Protection — strictly requires role === 'admin'
+    if (pathname.startsWith("/admin") && effectiveRole !== "admin") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
+      url.searchParams.set("error", "unauthorized_admin");
+      return applySecurityHeaders(NextResponse.redirect(url));
+    }
+
+    // Faculty Console Protection — requires role === 'faculty' or 'admin'
+    if (pathname.startsWith("/faculty") && effectiveRole !== "faculty" && effectiveRole !== "admin") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
+      url.searchParams.set("error", "unauthorized_faculty");
+      return applySecurityHeaders(NextResponse.redirect(url));
+    }
   }
 
   return applySecurityHeaders(response);

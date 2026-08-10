@@ -1,4 +1,5 @@
 import { AppShell } from "@/components/layout/app-shell";
+import { ErrorBoundary } from "@/components/shared/error-boundary";
 
 /**
  * Every route under here is gated by middleware to a signed-in user, so
@@ -14,5 +15,9 @@ export const dynamic = "force-dynamic";
  * to worry about the visual frame.
  */
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  return <AppShell>{children}</AppShell>;
+  return (
+    <ErrorBoundary>
+      <AppShell>{children}</AppShell>
+    </ErrorBoundary>
+  );
 }
