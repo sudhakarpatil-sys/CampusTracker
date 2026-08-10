@@ -12,11 +12,27 @@ import { MobileAuthScreen } from "@/components/mobile/auth/mobile-auth-screen";
 export type RolePreview = "login" | "onboarding" | "student" | "faculty" | "admin";
 
 export default function MobileMainPage() {
-  const { profile } = useUser();
+  const { user, profile, isLoading } = useUser();
   const [overrideRole, setOverrideRole] = React.useState<RolePreview | null>(null);
 
-  // Determine current effective role
-  const effectiveRole: RolePreview = overrideRole || (profile?.role as RolePreview) || "student";
+  // Determine current effective role with production authentication flow priority
+  const effectiveRole: RolePreview = React.useMemo(() => {
+    // 1. Manual dev override takes precedence if selected by developer
+    if (overrideRole) return overrideRole;
+
+    // 2. Unauthenticated user -> Mobile Auth / Login Screen
+    if (!user && !isLoading) return "login";
+
+    // 3. Authenticated user who hasn't completed onboarding -> Onboarding Flow
+    if (profile && !profile.onboarding_completed) return "onboarding";
+
+    // 4. Role-based routing for authenticated users
+    if (profile?.role === "faculty") return "faculty";
+    if (profile?.role === "admin") return "admin";
+
+    // Default Student App for authenticated students
+    return "student";
+  }, [overrideRole, user, profile, isLoading]);
 
   if (effectiveRole === "login") {
     return (

@@ -50,6 +50,14 @@ export function MobileShell({
   const { user, profile } = useUser();
   const pathname = usePathname();
   const [theme, setTheme] = React.useState<"dark" | "light">("dark");
+  const [isLocalDev, setIsLocalDev] = React.useState(false);
+
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      const host = window.location.hostname;
+      setIsLocalDev(host === "localhost" || host === "127.0.0.1" || host.startsWith("192.168.") || process.env.NODE_ENV === "development");
+    }
+  }, []);
 
   const toggleTheme = () => {
     const nextTheme = theme === "dark" ? "light" : "dark";
@@ -164,11 +172,11 @@ export function MobileShell({
           </div>
         </header>
 
-        {/* Role Switcher Banner */}
-        {onRoleSwitch && (
+        {/* Role Switcher Banner (Visible only in local development preview) */}
+        {onRoleSwitch && isLocalDev && (
           <div className="shrink-0 px-4 py-1.5 bg-gradient-to-r from-purple-950/90 via-slate-900 to-purple-950/90 border-b border-purple-500/30 flex items-center justify-between text-xs text-purple-300 z-30">
             <span className="flex items-center gap-1 font-medium text-[11px]">
-              <Sparkles className="h-3.5 w-3.5 text-purple-400" /> Role:
+              <Sparkles className="h-3.5 w-3.5 text-purple-400" /> Dev Role:
             </span>
             <div className="flex gap-1">
               {(["login", "onboarding", "student", "faculty", "admin"] as const).map((r) => (
