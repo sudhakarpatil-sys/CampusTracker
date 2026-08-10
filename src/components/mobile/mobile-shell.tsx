@@ -29,7 +29,7 @@ interface MobileShellProps {
   onOpenSearch?: () => void;
   onOpenNotifications?: () => void;
   activeRole?: "student" | "faculty" | "admin";
-  onRoleSwitch?: (role: "student" | "faculty" | "admin" | "onboarding") => void;
+  onRoleSwitch?: (role: "login" | "onboarding" | "student" | "faculty" | "admin") => void;
   bottomNav?: React.ReactNode;
   modals?: React.ReactNode;
 }
@@ -171,7 +171,7 @@ export function MobileShell({
               <Sparkles className="h-3.5 w-3.5 text-purple-400" /> Role:
             </span>
             <div className="flex gap-1">
-              {(["onboarding", "student", "faculty", "admin"] as const).map((r) => (
+              {(["login", "onboarding", "student", "faculty", "admin"] as const).map((r) => (
                 <button
                   type="button"
                   key={r}
@@ -180,12 +180,12 @@ export function MobileShell({
                     onRoleSwitch(r);
                   }}
                   className={`px-2 py-0.5 rounded-md font-semibold text-[10px] uppercase transition-all cursor-pointer ${
-                    (userRole === r || (userRole === "student" && r === "onboarding" && activeRole === undefined))
+                    userRole === r
                       ? "bg-purple-600 text-white shadow-sm shadow-purple-500/40" 
                       : "bg-slate-800/80 text-slate-400 hover:text-slate-200"
                   }`}
                 >
-                  {r === "onboarding" ? "NEW USER" : r}
+                  {r === "login" ? "LOGIN" : r === "onboarding" ? "NEW USER" : r}
                 </button>
               ))}
             </div>

@@ -7,15 +7,24 @@ import { FacultyApp } from "@/components/mobile/faculty/faculty-app";
 import { AdminApp } from "@/components/mobile/admin/admin-app";
 import { MobileShell } from "@/components/mobile/mobile-shell";
 import { FirstTimeStudentOnboarding } from "@/components/mobile/student/student-onboarding";
+import { MobileAuthScreen } from "@/components/mobile/auth/mobile-auth-screen";
 
-export type RolePreview = "onboarding" | "student" | "faculty" | "admin";
+export type RolePreview = "login" | "onboarding" | "student" | "faculty" | "admin";
 
 export default function MobileMainPage() {
   const { profile } = useUser();
   const [overrideRole, setOverrideRole] = React.useState<RolePreview | null>(null);
 
-  // Determine current effective role with immediate fallback to student
+  // Determine current effective role
   const effectiveRole: RolePreview = overrideRole || (profile?.role as RolePreview) || "student";
+
+  if (effectiveRole === "login") {
+    return (
+      <MobileShell activeRole="student" onRoleSwitch={setOverrideRole}>
+        <MobileAuthScreen onSuccessLogin={(r) => setOverrideRole(r)} />
+      </MobileShell>
+    );
+  }
 
   if (effectiveRole === "onboarding") {
     return (

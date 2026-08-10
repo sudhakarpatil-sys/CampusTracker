@@ -24,7 +24,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
 interface AdminAppProps {
-  onRoleSwitch?: (role: "student" | "faculty" | "admin" | "onboarding") => void;
+  onRoleSwitch?: (role: "login" | "onboarding" | "student" | "faculty" | "admin") => void;
 }
 
 export function AdminApp({ onRoleSwitch }: AdminAppProps) {

@@ -52,7 +52,7 @@ import type { Assignment, Note } from "@/types/database.types";
 import { useAnnouncementsStore, type BroadcastAnnouncement } from "@/lib/announcements-store";
 
 interface StudentAppProps {
-  onRoleSwitch?: (role: "student" | "faculty" | "admin" | "onboarding") => void;
+  onRoleSwitch?: (role: "login" | "onboarding" | "student" | "faculty" | "admin") => void;
 }
 
 export function StudentApp({ onRoleSwitch }: StudentAppProps) {

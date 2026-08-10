@@ -33,7 +33,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useAnnouncementsStore, type BroadcastAnnouncement } from "@/lib/announcements-store";
 
 interface FacultyAppProps {
-  onRoleSwitch?: (role: "student" | "faculty" | "admin" | "onboarding") => void;
+  onRoleSwitch?: (role: "login" | "onboarding" | "student" | "faculty" | "admin") => void;
 }
 
 export function FacultyApp({ onRoleSwitch }: FacultyAppProps) {
