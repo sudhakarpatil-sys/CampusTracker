@@ -24,6 +24,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "10dc9ee7-8f71-4c2f-9356-73fd0b007f4e"
+      }
+    },
+    "owner": "sudhakar06s-team"
   }
 }
