@@ -1,20 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { Loader2, PartyPopper, MapPin, UserCheck, Clock } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { PartyPopper, MapPin, UserCheck, Clock } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTimetable } from "@/hooks/use-timetable";
 import { useSubjects } from "@/hooks/use-subjects";
-import { useAttendance, type AttendanceStatus } from "@/hooks/use-attendance";
+import { useAttendance } from "@/hooks/use-attendance";
 import { todayISODay, formatTime } from "@/lib/academic";
-import { cn } from "@/lib/utils";
-
-const STATUS_OPTIONS = [
-  { value: "present", label: "Present" },
-  { value: "absent", label: "Absent" },
-  { value: "cancelled", label: "Cancelled" },
-] as const;
 
 interface TodaysScheduleProps {
   fallback?: React.ReactNode;
@@ -23,9 +15,7 @@ interface TodaysScheduleProps {
 export function TodaysSchedule({ fallback }: TodaysScheduleProps) {
   const { slotsForDay, isLoading: timetableLoading } = useTimetable();
   const { subjectsById, isLoading: subjectsLoading } = useSubjects();
-  const { statusFor, markAttendance } = useAttendance();
-
-  const [pending, setPending] = React.useState<{ slotId: string; status: AttendanceStatus } | null>(null);
+  const { statusFor } = useAttendance();
 
   const today = todayISODay();
   const todaysSlots = slotsForDay(today);
@@ -54,19 +44,11 @@ export function TodaysSchedule({ fallback }: TodaysScheduleProps) {
     );
   }
 
-  async function handleMark(subjectId: string, slotId: string, status: AttendanceStatus) {
-    if (pending) return;
-    setPending({ slotId, status });
-    await markAttendance({ subjectId, timetableSlotId: slotId, status });
-    setPending(null);
-  }
-
   return (
     <div className="space-y-3">
       {todaysSlots.map((slot) => {
         const subject = subjectsById.get(slot.subject_id);
         const currentStatus = statusFor(slot.id);
-        const isRowPending = pending?.slotId === slot.id;
         const subjectColor = subject?.color || "#6366F1";
 
         return (
@@ -99,30 +81,27 @@ export function TodaysSchedule({ fallback }: TodaysScheduleProps) {
               </div>
             </div>
 
-            <div className="flex gap-1.5">
-              {STATUS_OPTIONS.map((opt) => {
-                const isThisButtonPending = isRowPending && pending?.status === opt.value;
-                const isSelected = currentStatus === opt.value;
-
-                return (
-                  <Button
-                    key={opt.value}
-                    size="sm"
-                    variant={isSelected ? "default" : "outline"}
-                    className={cn(
-                      "h-8 text-xs font-medium transition-all duration-200",
-                      isSelected && opt.value === "present" && "bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm",
-                      isSelected && opt.value === "absent" && "bg-rose-600 text-white hover:bg-rose-700 shadow-sm",
-                      isSelected && opt.value === "cancelled" && "bg-slate-600 text-white hover:bg-slate-700 shadow-sm"
-                    )}
-                    disabled={isRowPending}
-                    onClick={() => handleMark(slot.subject_id, slot.id, opt.value)}
-                  >
-                    {isThisButtonPending && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
-                    {opt.label}
-                  </Button>
-                );
-              })}
+            <div className="flex items-center gap-2">
+              {currentStatus === "present" && (
+                <span className="inline-flex items-center gap-1 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                  Official: Present
+                </span>
+              )}
+              {currentStatus === "absent" && (
+                <span className="inline-flex items-center gap-1 rounded-lg border border-rose-500/30 bg-rose-500/10 px-2.5 py-1 text-xs font-semibold text-rose-600 dark:text-rose-400">
+                  Official: Absent
+                </span>
+              )}
+              {currentStatus === "cancelled" && (
+                <span className="inline-flex items-center gap-1 rounded-lg border border-slate-500/30 bg-slate-500/10 px-2.5 py-1 text-xs font-semibold text-slate-400">
+                  Cancelled
+                </span>
+              )}
+              {!currentStatus && (
+                <span className="inline-flex items-center gap-1 rounded-lg border border-indigo-500/20 bg-indigo-500/10 px-2.5 py-1 text-xs font-medium text-indigo-400">
+                  Scheduled (ERP Sync Pending)
+                </span>
+              )}
             </div>
           </div>
         );

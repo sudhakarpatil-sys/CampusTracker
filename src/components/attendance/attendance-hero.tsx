@@ -33,7 +33,7 @@ export function AttendanceHero() {
           </h1>
 
           <p className="max-w-xl text-sm text-teal-100/90 leading-relaxed">
-            Mark daily lectures with one click and track target progress across all subjects automatically.
+            Track official attendance stats, subject trends, and threshold targets synced directly from institutional ERP data.
           </p>
         </div>
 
