@@ -5,10 +5,10 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   StatusBar,
 } from "react-native";
-import { LogOut, Bell, Calendar, ChevronRight, CheckCircle2, Clock } from "lucide-react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { LogOut, Bell, ChevronRight, CheckCircle2, Clock, HelpCircle } from "lucide-react-native";
 import { colors } from "../../theme/colors";
 import { useUserStore } from "../../store/use-user-store";
 import { useAnnouncementsStore } from "../../store/use-announcements-store";
@@ -30,40 +30,61 @@ const SMART_STACK_ITEM: SmartStackItem = {
 };
 
 export const StudentHomeScreen: React.FC = () => {
+  const insets = useSafeAreaInsets();
   const user = useUserStore((state) => state.user);
   const signOut = useUserStore((state) => state.signOut);
+  const setOnboardingCompleted = useUserStore((state) => state.setOnboardingCompleted);
 
   const announcements = useAnnouncementsStore((state) => state.announcements);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<AnnouncementItem | null>(null);
 
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.background} />
+  const displayName = user?.full_name?.trim() || user?.email?.split("@")[0] || "Student";
+  const initials = displayName.substring(0, 2).toUpperCase();
 
-      {/* App Header Bar */}
-      <View style={styles.header}>
+  return (
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+
+      {/* Safe Area Protected App Header Bar */}
+      <View style={[styles.header, { paddingTop: Math.max(insets.top, 12) + 6 }]}>
         <View style={styles.userInfo}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>
-              {user?.full_name ? user.full_name.substring(0, 2).toUpperCase() : "ST"}
-            </Text>
+            <Text style={styles.avatarText}>{initials}</Text>
           </View>
-          <View>
+
+          <View style={styles.userTextContainer}>
             <Text style={styles.greetingText}>Welcome back,</Text>
-            <Text style={styles.userName}>{user?.full_name || "Student"}</Text>
+            <Text style={styles.userName} numberOfLines={1} ellipsizeMode="tail">
+              {displayName}
+            </Text>
+            <Text style={styles.academicSubtitle}>Sem 5 • Computer Science</Text>
           </View>
         </View>
 
-        <TouchableOpacity onPress={signOut} style={styles.logoutButton}>
-          <LogOut size={18} color={colors.textSecondary} />
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          <TouchableOpacity
+            onPress={() => setOnboardingCompleted(false)}
+            style={styles.iconButton}
+            accessibilityLabel="Replay Onboarding Guide"
+          >
+            <HelpCircle size={18} color={colors.textSecondary} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={signOut}
+            style={styles.iconButton}
+            accessibilityLabel="Log Out"
+          >
+            <LogOut size={18} color={colors.textSecondary} />
+          </TouchableOpacity>
+        </View>
       </View>
 
-      <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+      <ScrollView style={styles.scrollArea} contentContainerStyle={styles.scrollContent}>
         {/* Smart Stack Hero Component */}
         <SmartStackCard item={SMART_STACK_ITEM} />
 
-        {/* Attendance Summary Card */}
+        {/* Official Attendance Summary Card */}
         <View style={styles.card}>
           <View style={styles.cardHeader}>
             <Text style={styles.cardTitle}>Official Attendance Summary</Text>
@@ -101,8 +122,12 @@ export const StudentHomeScreen: React.FC = () => {
               <Text style={styles.timeEnd}>10:00 AM</Text>
             </View>
             <View style={styles.scheduleContent}>
-              <Text style={styles.subjectName}>Data Structures (CS301)</Text>
-              <Text style={styles.roomText}>Room 402 • Prof. Sudhakar Patil</Text>
+              <Text style={styles.subjectName} numberOfLines={1} ellipsizeMode="tail">
+                Data Structures (CS301)
+              </Text>
+              <Text style={styles.roomText} numberOfLines={1} ellipsizeMode="tail">
+                Room 402 • Prof. Sudhakar Patil
+              </Text>
             </View>
             <View style={styles.statusBadgeOngoing}>
               <Text style={styles.statusTextOngoing}>Ongoing</Text>
@@ -115,8 +140,12 @@ export const StudentHomeScreen: React.FC = () => {
               <Text style={styles.timeEnd}>12:00 PM</Text>
             </View>
             <View style={styles.scheduleContent}>
-              <Text style={styles.subjectName}>Database Systems (CS302)</Text>
-              <Text style={styles.roomText}>Room 305 • Dr. Ananya Sharma</Text>
+              <Text style={styles.subjectName} numberOfLines={1} ellipsizeMode="tail">
+                Database Systems (CS302)
+              </Text>
+              <Text style={styles.roomText} numberOfLines={1} ellipsizeMode="tail">
+                Room 305 • Dr. Ananya Sharma
+              </Text>
             </View>
             <View style={styles.statusBadgeUpcoming}>
               <Text style={styles.statusTextUpcoming}>Upcoming</Text>
@@ -141,12 +170,12 @@ export const StudentHomeScreen: React.FC = () => {
               onPress={() => setSelectedAnnouncement(ann)}
             >
               <View style={styles.annHeader}>
-                <Text style={styles.annTitle} numberOfLines={1}>
+                <Text style={styles.annTitle} numberOfLines={1} ellipsizeMode="tail">
                   {ann.title}
                 </Text>
                 <Text style={styles.annTime}>{ann.time}</Text>
               </View>
-              <Text style={styles.annSnippet} numberOfLines={2}>
+              <Text style={styles.annSnippet} numberOfLines={2} ellipsizeMode="tail">
                 {ann.content}
               </Text>
               <View style={styles.annFooter}>
@@ -167,12 +196,12 @@ export const StudentHomeScreen: React.FC = () => {
         announcement={selectedAnnouncement}
         onClose={() => setSelectedAnnouncement(null)}
       />
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
+  container: {
     flex: 1,
     backgroundColor: colors.background,
   },
@@ -181,7 +210,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 20,
-    paddingVertical: 14,
+    paddingBottom: 14,
+    backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: colors.borderLight,
   },
@@ -189,19 +219,26 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
+    flex: 1,
+    marginRight: 12,
   },
   avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: colors.primary,
     alignItems: "center",
     justifyContent: "center",
+    borderColor: "rgba(147, 51, 234, 0.4)",
+    borderWidth: 1,
   },
   avatarText: {
     color: "#FFF",
     fontWeight: "bold",
-    fontSize: 14,
+    fontSize: 15,
+  },
+  userTextContainer: {
+    flex: 1,
   },
   greetingText: {
     color: colors.textMuted,
@@ -209,20 +246,34 @@ const styles = StyleSheet.create({
   },
   userName: {
     color: colors.text,
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: "bold",
   },
-  logoutButton: {
-    padding: 8,
-    borderRadius: 12,
-    backgroundColor: colors.surfaceLight,
+  academicSubtitle: {
+    color: colors.primaryLight,
+    fontSize: 10,
+    fontWeight: "500",
+    marginTop: 1,
   },
-  container: {
+  headerActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  iconButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.surfaceLight,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  scrollArea: {
     flex: 1,
   },
   scrollContent: {
     paddingHorizontal: 16,
-    paddingTop: 12,
+    paddingTop: 14,
     paddingBottom: 32,
     gap: 14,
   },

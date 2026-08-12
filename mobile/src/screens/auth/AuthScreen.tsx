@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { GraduationCap, ShieldCheck, Mail, Lock, User, ArrowRight } from "lucide-react-native";
 import { colors } from "../../theme/colors";
 import { detectRoleFromEmail } from "../../utils/auth-validation";
@@ -17,6 +18,7 @@ import { useUserStore } from "../../store/use-user-store";
 import { supabase } from "../../services/supabase";
 
 export const AuthScreen: React.FC = () => {
+  const insets = useSafeAreaInsets();
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -101,7 +103,7 @@ export const AuthScreen: React.FC = () => {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={styles.container}
+      style={[styles.container, { paddingTop: Math.max(insets.top, 16) + 12 }]}
     >
       <View style={styles.header}>
         <View style={styles.logoBadge}>

@@ -21,4 +21,19 @@ export const ExpoSecureStoreAdapter = {
     }
     return SecureStore.deleteItemAsync(key);
   },
+  hasCompletedOnboarding: async (): Promise<boolean> => {
+    try {
+      const val = await ExpoSecureStoreAdapter.getItem("has_completed_onboarding");
+      return val === "true";
+    } catch {
+      return false;
+    }
+  },
+  setOnboardingCompleted: async (completed: boolean): Promise<void> => {
+    try {
+      await ExpoSecureStoreAdapter.setItem("has_completed_onboarding", completed ? "true" : "false");
+    } catch (err) {
+      // Storage error fallback
+    }
+  },
 };

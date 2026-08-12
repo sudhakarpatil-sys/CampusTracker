@@ -1,6 +1,7 @@
 import React from "react";
-import { View, Text, ScrollView, StyleSheet, SafeAreaView, StatusBar } from "react-native";
-import { ShieldCheck, AlertTriangle, CheckCircle, Clock } from "lucide-react-native";
+import { View, Text, ScrollView, StyleSheet, StatusBar } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { ShieldCheck, AlertTriangle, CheckCircle } from "lucide-react-native";
 import { colors } from "../../theme/colors";
 
 interface SubjectAttendance {
@@ -20,16 +21,18 @@ const SUBJECT_ATTENDANCE: SubjectAttendance[] = [
 ];
 
 export const AttendanceScreen: React.FC = () => {
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.background} />
+  const insets = useSafeAreaInsets();
 
-      <View style={styles.header}>
+  return (
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+
+      <View style={[styles.header, { paddingTop: Math.max(insets.top, 12) + 6 }]}>
         <Text style={styles.headerTitle}>Official Attendance</Text>
         <Text style={styles.headerSubtitle}>Synchronized from College ERP System</Text>
       </View>
 
-      <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+      <ScrollView style={styles.scrollArea} contentContainerStyle={styles.scrollContent}>
         {/* Overall Standing Banner */}
         <View style={styles.summaryBanner}>
           <View style={styles.summaryHeader}>
@@ -60,8 +63,10 @@ export const AttendanceScreen: React.FC = () => {
           return (
             <View key={sub.id} style={styles.subjectCard}>
               <View style={styles.subjectHeader}>
-                <View>
-                  <Text style={styles.subjectName}>{sub.name}</Text>
+                <View style={styles.subjectNameContainer}>
+                  <Text style={styles.subjectName} numberOfLines={1} ellipsizeMode="tail">
+                    {sub.name}
+                  </Text>
                   <Text style={styles.subjectCode}>{sub.code}</Text>
                 </View>
                 <Text style={[styles.subjectPercentage, { color: isPassing ? colors.success : colors.danger }]}>
@@ -88,18 +93,19 @@ export const AttendanceScreen: React.FC = () => {
           );
         })}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
+  container: {
     flex: 1,
     backgroundColor: colors.background,
   },
   header: {
     paddingHorizontal: 20,
-    paddingVertical: 14,
+    paddingBottom: 14,
+    backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: colors.borderLight,
   },
@@ -113,7 +119,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 2,
   },
-  container: {
+  scrollArea: {
     flex: 1,
   },
   scrollContent: {
@@ -193,6 +199,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "flex-start",
     marginBottom: 10,
+  },
+  subjectNameContainer: {
+    flex: 1,
+    marginRight: 12,
   },
   subjectName: {
     color: colors.text,

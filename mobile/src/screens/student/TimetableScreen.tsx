@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, SafeAreaView, StatusBar } from "react-native";
-import { Calendar, Clock, MapPin, User } from "lucide-react-native";
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, StatusBar } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Clock, MapPin, User } from "lucide-react-native";
 import { colors } from "../../theme/colors";
 import { TimetableSlot } from "../../types";
 
@@ -28,15 +29,16 @@ const TIMETABLE_DATA: Record<string, TimetableSlot[]> = {
 };
 
 export const TimetableScreen: React.FC = () => {
+  const insets = useSafeAreaInsets();
   const [selectedDay, setSelectedDay] = useState<typeof DAYS[number]>("Mon");
 
   const currentSlots = TIMETABLE_DATA[selectedDay] || [];
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.background} />
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
 
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: Math.max(insets.top, 12) + 6 }]}>
         <Text style={styles.headerTitle}>Class Timetable</Text>
         <Text style={styles.headerSubtitle}>5th Semester • Computer Science & Engineering</Text>
       </View>
@@ -57,63 +59,71 @@ export const TimetableScreen: React.FC = () => {
         })}
       </View>
 
-      <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
-        {currentSlots.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Calendar size={36} color={colors.textMuted} />
-            <Text style={styles.emptyText}>No classes scheduled for {selectedDay}</Text>
-          </View>
-        ) : (
-          currentSlots.map((slot) => (
+      <ScrollView style={styles.scrollArea} contentContainerStyle={styles.scrollContent}>
+        {currentSlots.map((slot) => {
+          const isOngoing = slot.status === "ongoing";
+          const isCompleted = slot.status === "completed";
+
+          return (
             <View key={slot.id} style={styles.slotCard}>
               <View style={styles.slotHeader}>
                 <View style={styles.timeRow}>
                   <Clock size={14} color={colors.primaryLight} />
-                  <Text style={styles.slotTime}>{slot.time}</Text>
+                  <Text style={styles.timeText}>{slot.time}</Text>
                 </View>
                 <View
                   style={[
                     styles.statusBadge,
-                    slot.status === "ongoing"
-                      ? styles.ongoingBadge
-                      : slot.status === "completed"
-                      ? styles.completedBadge
-                      : styles.upcomingBadge,
+                    isOngoing && styles.badgeOngoing,
+                    isCompleted && styles.badgeCompleted,
                   ]}
                 >
-                  <Text style={styles.statusText}>{slot.status.toUpperCase()}</Text>
+                  <Text
+                    style={[
+                      styles.statusText,
+                      isOngoing && styles.statusTextOngoing,
+                      isCompleted && styles.statusTextCompleted,
+                    ]}
+                  >
+                    {slot.status.toUpperCase()}
+                  </Text>
                 </View>
               </View>
 
-              <Text style={styles.subjectTitle}>{slot.subject}</Text>
-              <Text style={styles.subjectCode}>{slot.code}</Text>
+              <Text style={styles.subjectTitle} numberOfLines={1} ellipsizeMode="tail">
+                {slot.subject}
+              </Text>
+              <Text style={styles.codeText}>{slot.code}</Text>
 
               <View style={styles.metaRow}>
                 <View style={styles.metaItem}>
-                  <MapPin size={13} color={colors.textMuted} />
+                  <MapPin size={12} color={colors.textMuted} />
                   <Text style={styles.metaText}>{slot.room}</Text>
                 </View>
                 <View style={styles.metaItem}>
-                  <User size={13} color={colors.textMuted} />
-                  <Text style={styles.metaText}>{slot.faculty}</Text>
+                  <User size={12} color={colors.textMuted} />
+                  <Text style={styles.metaText} numberOfLines={1} ellipsizeMode="tail">
+                    {slot.faculty}
+                  </Text>
                 </View>
               </View>
             </View>
-          ))
-        )}
+          );
+        })}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
+  container: {
     flex: 1,
     backgroundColor: colors.background,
   },
   header: {
     paddingHorizontal: 20,
-    paddingVertical: 14,
+    paddingBottom: 14,
+    backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: colors.borderLight,
   },
@@ -133,10 +143,12 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     gap: 8,
     backgroundColor: colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
   dayButton: {
     flex: 1,
-    paddingVertical: 10,
+    paddingVertical: 8,
     alignItems: "center",
     borderRadius: 12,
     backgroundColor: colors.inputBg,
@@ -146,14 +158,14 @@ const styles = StyleSheet.create({
   },
   dayText: {
     color: colors.textMuted,
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: "600",
   },
   selectedDayText: {
     color: "#FFF",
     fontWeight: "bold",
   },
-  container: {
+  scrollArea: {
     flex: 1,
   },
   scrollContent: {
@@ -161,16 +173,6 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 32,
     gap: 12,
-  },
-  emptyContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 60,
-    gap: 12,
-  },
-  emptyText: {
-    color: colors.textMuted,
-    fontSize: 14,
   },
   slotCard: {
     backgroundColor: colors.surface,
@@ -190,46 +192,49 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 6,
   },
-  slotTime: {
+  timeText: {
     color: colors.primaryLight,
     fontSize: 12,
     fontWeight: "bold",
   },
   statusBadge: {
+    backgroundColor: colors.surfaceLight,
     paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingVertical: 3,
     borderRadius: 8,
   },
-  ongoingBadge: {
+  badgeOngoing: {
     backgroundColor: "rgba(147, 51, 234, 0.2)",
   },
-  completedBadge: {
+  badgeCompleted: {
     backgroundColor: "rgba(16, 185, 129, 0.15)",
   },
-  upcomingBadge: {
-    backgroundColor: "rgba(99, 102, 241, 0.15)",
-  },
   statusText: {
-    color: "#FFF",
-    fontSize: 10,
+    color: colors.textMuted,
+    fontSize: 9,
     fontWeight: "bold",
+  },
+  statusTextOngoing: {
+    color: colors.primaryLight,
+  },
+  statusTextCompleted: {
+    color: colors.success,
   },
   subjectTitle: {
     color: colors.text,
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "bold",
   },
-  subjectCode: {
+  codeText: {
     color: colors.textMuted,
-    fontSize: 12,
+    fontSize: 11,
     marginTop: 2,
     marginBottom: 12,
   },
   metaRow: {
     flexDirection: "row",
-    alignItems: "center",
     gap: 16,
-    paddingTop: 10,
+    paddingTop: 8,
     borderTopWidth: 1,
     borderTopColor: colors.borderLight,
   },
@@ -237,9 +242,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
+    flex: 1,
   },
   metaText: {
     color: colors.textSecondary,
-    fontSize: 12,
+    fontSize: 11,
   },
 });

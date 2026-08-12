@@ -1,35 +1,41 @@
 import React from "react";
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, SafeAreaView, StatusBar } from "react-native";
-import { LogOut, Database, Activity, ShieldCheck, CheckCircle2, AlertTriangle, RefreshCw } from "lucide-react-native";
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, StatusBar } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { LogOut, Database, Activity, ShieldCheck, CheckCircle2, RefreshCw } from "lucide-react-native";
 import { colors } from "../../theme/colors";
 import { useUserStore } from "../../store/use-user-store";
 
 export const AdminOverviewScreen: React.FC = () => {
+  const insets = useSafeAreaInsets();
   const user = useUserStore((state) => state.user);
   const signOut = useUserStore((state) => state.signOut);
 
+  const adminName = user?.full_name?.trim() || user?.email?.split("@")[0] || "Administrator";
+
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.background} />
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
 
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: Math.max(insets.top, 12) + 6 }]}>
         <View style={styles.userInfo}>
           <View style={styles.avatar}>
             <ShieldCheck size={20} color="#FFF" />
           </View>
-          <View>
+          <View style={styles.userTextContainer}>
             <Text style={styles.adminTag}>ADMIN CONSOLE</Text>
-            <Text style={styles.userName}>{user?.full_name || "Administrator"}</Text>
+            <Text style={styles.userName} numberOfLines={1} ellipsizeMode="tail">
+              {adminName}
+            </Text>
           </View>
         </View>
 
-        <TouchableOpacity onPress={signOut} style={styles.logoutButton}>
+        <TouchableOpacity onPress={signOut} style={styles.logoutButton} accessibilityLabel="Log Out">
           <LogOut size={18} color={colors.textSecondary} />
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+      <ScrollView style={styles.scrollArea} contentContainerStyle={styles.scrollContent}>
         {/* System Health Status */}
         <View style={styles.card}>
           <View style={styles.cardHeader}>
@@ -59,61 +65,65 @@ export const AdminOverviewScreen: React.FC = () => {
         {/* Sync Connectors List */}
         <View style={styles.card}>
           <View style={styles.cardHeader}>
-            <View style={styles.titleIconRow}>
+            <View style={styles.cardTitleRow}>
               <Database size={16} color={colors.primaryLight} />
               <Text style={styles.cardTitle}>Active ERP Connectors</Text>
             </View>
           </View>
 
           <View style={styles.connectorItem}>
-            <View style={styles.connectorDetails}>
-              <Text style={styles.connectorName}>Google Sheets ERP Sync</Text>
-              <Text style={styles.connectorSub}>Auto Sync: Hourly • Last: 08:30 AM</Text>
+            <View style={styles.connectorInfo}>
+              <Text style={styles.connectorName}>Google Sheets Master Roster Sync</Text>
+              <Text style={styles.connectorMeta}>Sync Interval: Every 6 Hours • Auto Trigger Enabled</Text>
             </View>
-            <View style={styles.statusBadgeGreen}>
-              <Text style={styles.statusTextGreen}>Active</Text>
+            <View style={styles.activeTag}>
+              <Text style={styles.activeTagText}>ACTIVE</Text>
             </View>
           </View>
 
           <View style={styles.connectorItem}>
-            <View style={styles.connectorDetails}>
-              <Text style={styles.connectorName}>College ERP API Pipeline</Text>
-              <Text style={styles.connectorSub}>Auto Sync: Daily • Last: 06:00 AM</Text>
+            <View style={styles.connectorInfo}>
+              <Text style={styles.connectorName}>Institutional ERP REST Connector</Text>
+              <Text style={styles.connectorMeta}>Status: Connected • 1,240 Rows Synchronized</Text>
             </View>
-            <View style={styles.statusBadgeGreen}>
-              <Text style={styles.statusTextGreen}>Active</Text>
+            <View style={styles.activeTag}>
+              <Text style={styles.activeTagText}>ACTIVE</Text>
             </View>
           </View>
         </View>
 
-        {/* Security & Audit Logs */}
+        {/* Audit Stream */}
         <View style={styles.card}>
           <View style={styles.cardHeader}>
-            <View style={styles.titleIconRow}>
+            <View style={styles.cardTitleRow}>
               <Activity size={16} color={colors.secondary} />
-              <Text style={styles.cardTitle}>Recent Security Audit Logs</Text>
+              <Text style={styles.cardTitle}>Security Audit Stream</Text>
             </View>
           </View>
 
           <View style={styles.logItem}>
-            <Text style={styles.logAction}>ADMIN_CONNECTOR_SYNC</Text>
-            <Text style={styles.logDetails}>Triggered manual sync on Google Sheets ERP connector.</Text>
-            <Text style={styles.logTime}>10 mins ago • Result: SUCCESS</Text>
+            <RefreshCw size={12} color={colors.success} />
+            <View style={styles.logContent}>
+              <Text style={styles.logTitle}>Connector Sync Completed</Text>
+              <Text style={styles.logTime}>Today at 08:30 AM • System Sync</Text>
+            </View>
           </View>
 
           <View style={styles.logItem}>
-            <Text style={styles.logAction}>AUTO_FACULTY_ROLE_ASSIGN</Text>
-            <Text style={styles.logDetails}>Assigned role 'faculty' for user sudhakar@college.edu.in</Text>
-            <Text style={styles.logTime}>1 hour ago • Result: SUCCESS</Text>
+            <ShieldCheck size={12} color={colors.primaryLight} />
+            <View style={styles.logContent}>
+              <Text style={styles.logTitle}>Student Session Authenticated</Text>
+              <Text style={styles.logTime}>Today at 09:00 AM • Role Verified</Text>
+            </View>
           </View>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
+  container: {
     flex: 1,
     backgroundColor: colors.background,
   },
@@ -122,7 +132,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 20,
-    paddingVertical: 14,
+    paddingBottom: 14,
+    backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: colors.borderLight,
   },
@@ -130,14 +141,19 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
+    flex: 1,
+    marginRight: 12,
   },
   avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.primaryDark,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.primary,
     alignItems: "center",
     justifyContent: "center",
+  },
+  userTextContainer: {
+    flex: 1,
   },
   adminTag: {
     color: colors.primaryLight,
@@ -147,15 +163,16 @@ const styles = StyleSheet.create({
   },
   userName: {
     color: colors.text,
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: "bold",
+    marginTop: 1,
   },
   logoutButton: {
     padding: 8,
     borderRadius: 12,
     backgroundColor: colors.surfaceLight,
   },
-  container: {
+  scrollArea: {
     flex: 1,
   },
   scrollContent: {
@@ -177,7 +194,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 14,
   },
-  titleIconRow: {
+  cardTitleRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
@@ -213,15 +230,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   metricValue: {
-    color: colors.primaryLight,
+    color: colors.text,
     fontSize: 20,
     fontWeight: "bold",
-    marginBottom: 4,
   },
   metricLabel: {
     color: colors.textMuted,
-    fontSize: 8,
-    fontWeight: "bold",
+    fontSize: 9,
+    fontWeight: "600",
+    marginTop: 4,
     textAlign: "center",
   },
   connectorItem: {
@@ -229,54 +246,54 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     backgroundColor: colors.inputBg,
-    borderRadius: 14,
+    borderRadius: 12,
     padding: 12,
     marginBottom: 10,
   },
-  connectorDetails: {
+  connectorInfo: {
     flex: 1,
+    marginRight: 10,
   },
   connectorName: {
     color: colors.text,
     fontSize: 13,
     fontWeight: "bold",
   },
-  connectorSub: {
+  connectorMeta: {
     color: colors.textMuted,
-    fontSize: 11,
+    fontSize: 10,
     marginTop: 2,
   },
-  statusBadgeGreen: {
+  activeTag: {
     backgroundColor: "rgba(16, 185, 129, 0.15)",
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 8,
+    borderRadius: 6,
   },
-  statusTextGreen: {
+  activeTagText: {
     color: colors.success,
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: "bold",
   },
   logItem: {
-    backgroundColor: colors.inputBg,
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 8,
-    borderColor: colors.borderLight,
-    borderWidth: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderLight,
   },
-  logAction: {
-    color: colors.secondary,
-    fontSize: 11,
-    fontWeight: "bold",
+  logContent: {
+    flex: 1,
   },
-  logDetails: {
-    color: colors.textSecondary,
+  logTitle: {
+    color: colors.text,
     fontSize: 12,
-    marginVertical: 4,
+    fontWeight: "bold",
   },
   logTime: {
     color: colors.textMuted,
     fontSize: 10,
+    marginTop: 1,
   },
 });
